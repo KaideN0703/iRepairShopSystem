@@ -1,0 +1,875 @@
+@import 'tailwindcss';
+
+@source '../views';          /* resources/views/**  (main app templates)   */
+@source '../js';             /* resources/js/**     (Alpine, JS components) */
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php'; /* Laravel pagination */
+
+/* ================================================================
+   iRepair Gadget Service Center — Brand Design System
+   Tailwind v4 compatible:
+   - Colors registered in @theme (generates bg-ir-*, text-ir-*, etc.)
+   - Clean, high-contrast, professional tech design without glow effects
+   ================================================================ */
+
+@theme {
+    /* ── Color tokens ── */
+    --color-ir-void:         #0B0B0C;
+    --color-ir-carbon:       #17181A;
+    --color-ir-gold:         #F5A623;
+    --color-ir-amber-deep:   #B97A1A;
+    --color-ir-copper:       #7A4A12;
+    --color-ir-bone:         #EDE6D6;
+    --color-ir-signal-green: #35D07F;
+    --color-ir-alert:        #E5484D;
+
+    /* ── Font stacks ── */
+    --font-display: 'Oswald', sans-serif;
+    --font-body:    'Inter', sans-serif;
+    --font-mono-brand: 'JetBrains Mono', monospace;
+}
+
+/* ================================================================
+   GLOBAL BASE
+   ================================================================ */
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+html {
+    height: 100%;
+}
+
+body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: #0B0B0C;
+    color: #EDE6D6;
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Clean PCB Hexagon background texture - subtle & flat, no glow */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='100'%3E%3Cpath d='M28 66 L56 50 L56 16 L28 0 L0 16 L0 50 Z' fill='none' stroke='%23F5A623' stroke-width='0.75' opacity='0.05'/%3E%3Cpath d='M28 100 L56 84 L56 50 L28 34 L0 50 L0 84 Z' fill='none' stroke='%23F5A623' stroke-width='0.75' opacity='0.05'/%3E%3C/svg%3E");
+    background-size: 56px 100px;
+    background-repeat: repeat;
+    background-attachment: fixed;
+}
+
+/* Brand scrollbar */
+::-webkit-scrollbar          { width: 5px; height: 5px; }
+::-webkit-scrollbar-track    { background: #0B0B0C; }
+::-webkit-scrollbar-thumb    { background: #7A4A12; border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: #B97A1A; }
+
+/* Alpine.js cloak */
+[x-cloak] { display: none !important; }
+
+/* ================================================================
+   TYPOGRAPHY HELPERS
+   ================================================================ */
+
+.ir-display {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+}
+
+.ir-mono {
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.page-title {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: 1.15rem;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    color: #EDE6D6;
+    margin: 0;
+}
+
+/* ================================================================
+   SIDEBAR NAV ITEMS
+   ================================================================ */
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.55rem 0.75rem;
+    border-radius: 5px;
+    font-size: 0.85rem;
+    font-family: 'Inter', sans-serif;
+    color: #9a8f7e;
+    text-decoration: none;
+    border: 1px solid transparent;
+    transition: color 150ms ease, background-color 150ms ease, border-color 150ms ease;
+    margin-bottom: 1px;
+}
+
+.nav-item:hover {
+    color: #EDE6D6;
+    background-color: rgba(245, 166, 35, 0.07);
+    border-color: rgba(245, 166, 35, 0.15);
+}
+
+.nav-item.active {
+    color: #F5A623;
+    background-color: rgba(245, 166, 35, 0.10);
+    border-color: rgba(245, 166, 35, 0.28);
+}
+
+.nav-item i {
+    color: inherit;
+    width: 1rem;
+    text-align: center;
+    flex-shrink: 0;
+    font-size: 0.8rem;
+}
+
+.nav-section-label {
+    font-size: 0.63rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #7A4A12;
+    font-family: 'Inter', sans-serif;
+    display: block;
+    padding: 0 0.25rem;
+}
+
+/* ================================================================
+   CARDS & PANELS
+   ================================================================ */
+
+.ir-card {
+    background-color: #17181A;
+    border: 1px solid #7A4A12;
+    border-radius: 6px;
+    padding: 1.25rem;
+}
+
+.ir-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(122, 74, 18, 0.45);
+}
+
+.ir-card-title {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #EDE6D6;
+    margin: 0;
+}
+
+/* Stat card — crisp copper/gold top border, clean flat finish */
+.ir-stat-card {
+    background-color: #17181A;
+    border: 1px solid #7A4A12;
+    border-radius: 6px;
+    padding: 1.25rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.ir-stat-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #F5A623 0%, #B97A1A 100%);
+    pointer-events: none;
+}
+
+.ir-stat-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: #F5A623;
+    line-height: 1;
+}
+
+.ir-stat-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.7rem;
+    color: #9a8f7e;
+    margin-top: 0.3rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+}
+
+/* ================================================================
+   BUTTONS (Flat, High-Contrast Tech Style)
+   ================================================================ */
+
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    background-color: #F5A623;
+    color: #0B0B0C;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 150ms, color 150ms;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.btn-primary:hover {
+    background-color: #B97A1A;
+    color: #EDE6D6;
+}
+
+.btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    background-color: transparent;
+    color: #F5A623;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    border: 1px solid #F5A623;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 150ms, color 150ms;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.btn-secondary:hover {
+    background-color: rgba(245, 166, 35, 0.10);
+    color: #EDE6D6;
+}
+
+.btn-danger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    background-color: transparent;
+    color: #E5484D;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    border: 1px solid #E5484D;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 150ms;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.btn-danger:hover {
+    background-color: rgba(229, 72, 77, 0.10);
+}
+
+.btn-sm {
+    padding: 0.35rem 0.75rem;
+    font-size: 0.78rem;
+}
+
+/* ================================================================
+   STATUS BADGES
+   ================================================================ */
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    background-color: #17181A;
+    border: 1px solid;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.badge-gold   { color: #F5A623; border-color: rgba(245, 166, 35, 0.45); }
+.badge-green  { color: #35D07F; border-color: rgba(53,  208, 127, 0.45); }
+.badge-red    { color: #E5484D; border-color: rgba(229,  72,  77, 0.45); }
+.badge-copper { color: #B97A1A; border-color: rgba(185, 122,  26, 0.45); }
+.badge-bone   { color: #EDE6D6; border-color: rgba(237, 230, 214, 0.30); }
+
+.badge-received        { color: #B97A1A; border-color: rgba(185,122,26,0.45); }
+.badge-diagnosing      { color: #F5A623; border-color: rgba(245,166,35,0.45); }
+.badge-waiting         { color: #EDE6D6; border-color: rgba(237,230,214,0.35); }
+.badge-under-repair    { color: #F5A623; border-color: rgba(245,166,35,0.55); }
+.badge-testing         { color: #B97A1A; border-color: rgba(185,122,26,0.55); }
+.badge-ready           { color: #35D07F; border-color: rgba(53,208,127,0.45); }
+.badge-completed       { color: #35D07F; border-color: rgba(53,208,127,0.55); }
+.badge-released        { color: #EDE6D6; border-color: rgba(237,230,214,0.3); }
+.badge-paid            { color: #35D07F; border-color: rgba(53,208,127,0.45); }
+.badge-unpaid          { color: #E5484D; border-color: rgba(229,72,77,0.45);  }
+.badge-partial         { color: #F5A623; border-color: rgba(245,166,35,0.45); }
+.badge-warranty        { color: #B97A1A; border-color: rgba(185,122,26,0.45); }
+
+/* ================================================================
+   TABLES
+   ================================================================ */
+
+.ir-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.875rem;
+    color: #EDE6D6;
+}
+
+.ir-table thead tr {
+    border-bottom: 1px solid #7A4A12;
+}
+
+.ir-table thead th {
+    padding: 0.55rem 0.85rem;
+    text-align: left;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #9a8f7e;
+    white-space: nowrap;
+}
+
+.ir-table tbody tr {
+    border-bottom: 1px solid rgba(122, 74, 18, 0.35);
+    transition: background-color 120ms, border-left-color 120ms;
+    border-left: 3px solid transparent;
+}
+
+.ir-table tbody tr:hover {
+    background-color: rgba(245, 166, 35, 0.04);
+    border-left-color: #F5A623;
+}
+
+.ir-table tbody td {
+    padding: 0.6rem 0.85rem;
+    vertical-align: middle;
+}
+
+.ir-table .mono-col,
+.ir-table td.mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+}
+
+/* ================================================================
+   FORMS & INPUTS
+   ================================================================ */
+
+.ir-label {
+    display: block;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #9a8f7e;
+    margin-bottom: 0.35rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.ir-input {
+    width: 100%;
+    background-color: #17181A;
+    border: 1px solid #7A4A12;
+    border-radius: 5px;
+    padding: 0.55rem 0.85rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.875rem;
+    color: #EDE6D6;
+    outline: none;
+    transition: border-color 150ms ease;
+    box-sizing: border-box;
+}
+
+.ir-input::placeholder {
+    color: rgba(237, 230, 214, 0.22);
+}
+
+.ir-input:focus {
+    border-color: #F5A623;
+}
+
+.ir-input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.ir-select {
+    width: 100%;
+    background-color: #17181A;
+    border: 1px solid #7A4A12;
+    border-radius: 5px;
+    padding: 0.55rem 2rem 0.55rem 0.85rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.875rem;
+    color: #EDE6D6;
+    outline: none;
+    transition: border-color 150ms ease;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237A4A12' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    box-sizing: border-box;
+}
+
+.ir-select:focus {
+    border-color: #F5A623;
+}
+
+textarea.ir-input {
+    resize: vertical;
+    min-height: 80px;
+}
+
+input[type="checkbox"].ir-checkbox {
+    width: 14px;
+    height: 14px;
+    border: 1px solid #7A4A12;
+    border-radius: 2px;
+    background: #0B0B0C;
+    accent-color: #F5A623;
+    cursor: pointer;
+}
+
+/* ================================================================
+   FLASH ALERTS
+   ================================================================ */
+
+.ir-alert-success {
+    background-color: rgba(53, 208, 127, 0.07);
+    border: 1px solid rgba(53, 208, 127, 0.28);
+    color: #35D07F;
+    border-radius: 5px;
+    padding: 0.8rem 1rem;
+    font-size: 0.875rem;
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.ir-alert-error {
+    background-color: rgba(229, 72, 77, 0.07);
+    border: 1px solid rgba(229, 72, 77, 0.28);
+    color: #E5484D;
+    border-radius: 5px;
+    padding: 0.8rem 1rem;
+    font-size: 0.875rem;
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.ir-alert-info {
+    background-color: rgba(245, 166, 35, 0.07);
+    border: 1px solid rgba(245, 166, 35, 0.28);
+    color: #F5A623;
+    border-radius: 5px;
+    padding: 0.8rem 1rem;
+    font-size: 0.875rem;
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.ir-alert-dismiss {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: inherit;
+    opacity: 0.6;
+    padding: 0;
+    line-height: 1;
+    flex-shrink: 0;
+}
+.ir-alert-dismiss:hover { opacity: 1; }
+
+/* ================================================================
+   CIRCUIT TRACE DIVIDER
+   Thin gold line with node dots at each end — flat clean design
+   ================================================================ */
+
+.circuit-divider {
+    position: relative;
+    height: 1px;
+    background-color: #7A4A12;
+    margin: 1rem 0;
+}
+
+.circuit-divider::before,
+.circuit-divider::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #F5A623;
+}
+
+.circuit-divider::before { left: 0; }
+.circuit-divider::after  { right: 0; }
+
+/* ================================================================
+   CIRCUIT PROGRESS TRACKER
+   ================================================================ */
+
+.circuit-tracker-wrap {
+    padding: 2rem 0.5rem 1.25rem;
+    overflow-x: auto;
+}
+
+.circuit-tracker {
+    display: flex;
+    align-items: flex-start;
+    min-width: 560px;
+}
+
+.circuit-connector {
+    flex: 1;
+    height: 2px;
+    background-color: #7A4A12;
+    margin-top: 10px;
+    position: relative;
+    transition: background-color 500ms ease;
+}
+
+.circuit-connector.done {
+    background-color: #F5A623;
+}
+
+.circuit-connector.done::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background-color: #F5A623;
+}
+
+.circuit-stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.45rem;
+    flex-shrink: 0;
+    width: 72px;
+    position: relative;
+    cursor: default;
+}
+
+.circuit-node {
+    width: 21px;
+    height: 21px;
+    border-radius: 50%;
+    border: 2px solid #7A4A12;
+    background-color: #17181A;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 2;
+    transition: border-color 300ms, background-color 300ms;
+}
+
+.circuit-node.done {
+    border-color: #F5A623;
+    background-color: #F5A623;
+}
+
+.circuit-node.done::after {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background-color: #0B0B0C;
+    display: block;
+}
+
+.circuit-node.active {
+    border-color: #F5A623;
+    background-color: #17181A;
+}
+
+.circuit-node.active::after {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #F5A623;
+    display: block;
+}
+
+.circuit-stage-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.58rem;
+    text-align: center;
+    color: #7A4A12;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    line-height: 1.3;
+    transition: color 300ms;
+    word-break: break-word;
+    max-width: 70px;
+}
+
+.circuit-stage-label.done   { color: #B97A1A; }
+.circuit-stage-label.active { color: #F5A623; }
+
+.circuit-stage-tooltip {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 0.75rem);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 190px;
+    background-color: #17181A;
+    border: 1px solid #7A4A12;
+    border-radius: 5px;
+    padding: 0.6rem 0.7rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.73rem;
+    color: #EDE6D6;
+    z-index: 50;
+    text-align: left;
+    white-space: normal;
+    pointer-events: none;
+}
+
+.circuit-stage:hover .circuit-stage-tooltip {
+    display: block;
+}
+
+.circuit-stage-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: #7A4A12;
+}
+
+/* ================================================================
+   SIDEBAR USER CHIP
+   ================================================================ */
+
+.ir-user-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.75rem 1rem;
+    border-top: 1px solid #7A4A12;
+    flex-shrink: 0;
+}
+
+.ir-user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: rgba(245, 166, 35, 0.10);
+    border: 1px solid rgba(245, 166, 35, 0.28);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 0.72rem;
+    color: #F5A623;
+    flex-shrink: 0;
+}
+
+.ir-user-name {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #EDE6D6;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ir-user-role {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem;
+    color: #B97A1A;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ir-logout-btn {
+    margin-left: auto;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #7A4A12;
+    padding: 0.3rem;
+    border-radius: 4px;
+    transition: color 150ms, background-color 150ms;
+    flex-shrink: 0;
+    font-size: 0.85rem;
+    line-height: 1;
+}
+
+.ir-logout-btn:hover {
+    color: #E5484D;
+    background-color: rgba(229, 72, 77, 0.10);
+}
+
+/* ================================================================
+   FADE-IN PAGE ENTRY
+   ================================================================ */
+
+.ir-fade-in {
+    animation: irFadeIn 200ms ease-out both;
+}
+
+@keyframes irFadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ================================================================
+   PAGINATION
+   ================================================================ */
+
+.ir-pagination {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+}
+
+.ir-pagination a,
+.ir-pagination span {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+    border: 1px solid #7A4A12;
+    border-radius: 4px;
+    background-color: #17181A;
+    color: #9a8f7e;
+    text-decoration: none;
+    transition: border-color 150ms, color 150ms;
+    display: inline-block;
+}
+
+.ir-pagination a:hover {
+    border-color: #F5A623;
+    color: #F5A623;
+}
+
+.ir-pagination .active-page {
+    border-color: #F5A623;
+    color: #F5A623;
+    background-color: rgba(245, 166, 35, 0.10);
+}
+
+/* ================================================================
+   EMPTY STATE
+   ================================================================ */
+
+.ir-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1rem;
+    text-align: center;
+    color: #9a8f7e;
+    gap: 0.75rem;
+}
+
+.ir-empty i {
+    font-size: 2rem;
+    color: #7A4A12;
+    display: block;
+}
+
+.ir-empty p {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+/* ================================================================
+   FORM SECTION WRAPPER
+   ================================================================ */
+
+.ir-form-section {
+    background-color: #17181A;
+    border: 1px solid #7A4A12;
+    border-radius: 6px;
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+}
+
+.ir-form-section-title {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: #F5A623;
+    margin: 0 0 1rem;
+    padding-bottom: 0.65rem;
+    border-bottom: 1px solid rgba(122, 74, 18, 0.4);
+}
+
+/* ================================================================
+   MISC UTILITIES
+   ================================================================ */
+
+.ir-muted { color: #9a8f7e; }
+.ir-gold  { color: #F5A623; }
+
+.ir-dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background-color: #7A4A12;
+    vertical-align: middle;
+}
+
+.ir-dot.active {
+    background-color: #F5A623;
+}
+
+hr.ir-rule {
+    border: none;
+    border-top: 1px solid rgba(122, 74, 18, 0.4);
+    margin: 1.25rem 0;
+}
