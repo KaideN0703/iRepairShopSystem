@@ -129,4 +129,27 @@ class LiveRepairTrackerTest extends TestCase
         $this->assertEquals('approved', $approvalRequest->status);
         $this->assertGreaterThan($initialTotal, $jobOrder->total_cost);
     }
+
+    public function test_ticket_number_lookup_variations()
+    {
+        $jobOrder = JobOrder::first();
+
+        // 1. Lowercase ticket number
+        $resp1 = $this->post(route('status.lookup'), ['ticket_number' => strtolower($jobOrder->ticket_number)]);
+        $resp1->assertRedirect(route('track.show', $jobOrder->tracking_token));
+
+        // 2. Hash prefixed ticket number (e.g. #JO-2026-0001)
+        $resp2 = $this->post(route('status.lookup'), ['ticket_number' => '#' . $jobOrder->ticket_number]);
+        $resp2->assertRedirect(route('track.show', $jobOrder->tracking_token));
+
+        // 3. Raw number without JO- prefix (e.g. 2026-0001)
+        $rawNum = str_replace('JO-', '', $jobOrder->ticket_number);
+        $resp3 = $this->post(route('status.lookup'), ['ticket_number' => $rawNum]);
+        $resp3->assertRedirect(route('track.show', $jobOrder->tracking_token));
+
+        // 4. Directly accessing /status/{ticket_number} in lowercase
+        $resp4 = $this->get(route('status.show', strtolower($jobOrder->ticket_number)));
+        $resp4->assertStatus(200);
+        $resp4->assertSee($jobOrder->ticket_number);
+    }
 }

@@ -15,9 +15,11 @@ class CustomerApprovalController extends Controller
         RepairApprovalRequest $approvalRequest,
         ProgressTrackerService $trackerService
     ) {
-        $jobOrder = JobOrder::where('tracking_token', $token)
-            ->orWhere('ticket_number', $token)
-            ->firstOrFail();
+        $jobOrder = JobOrder::findByReference($token);
+
+        if (!$jobOrder) {
+            abort(404, 'Invalid tracking token or ticket number.');
+        }
 
         if ($approvalRequest->job_order_id !== $jobOrder->id) {
             abort(404, 'Invalid approval request for this ticket.');

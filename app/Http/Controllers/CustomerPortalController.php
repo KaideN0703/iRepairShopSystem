@@ -20,13 +20,10 @@ class CustomerPortalController extends Controller
         ]);
 
         $ticket = trim($request->ticket_number);
-        $jobOrder = JobOrder::where('ticket_number', $ticket)
-            ->orWhere('qr_code', $ticket)
-            ->orWhere('tracking_token', $ticket)
-            ->first();
+        $jobOrder = JobOrder::findByReference($ticket);
 
         if (!$jobOrder) {
-            return back()->with('error', "No repair ticket found matching '{$ticket}'. Please check your receipt ticket number.")->withInput();
+            return back()->with('error', "No repair ticket found matching '{$ticket}'. Please check your receipt, ticket number, or phone number.")->withInput();
         }
 
         return redirect()->route('track.show', $jobOrder->tracking_token ?? $jobOrder->ticket_number);
@@ -44,7 +41,13 @@ class CustomerPortalController extends Controller
 
     protected function renderTrackingPage(string $token)
     {
-        $jobOrder = JobOrder::with([
+        $jobOrder = JobOrder::findByReference($token);
+
+        if (!$jobOrder) {
+            return redirect()->route('status.index')->with('error', "No repair ticket found matching '{$token}'. Please enter a valid ticket number or receipt code.");
+        }
+
+        $jobOrder->load([
             'customer',
             'device',
             'statusHistories',
@@ -55,11 +58,7 @@ class CustomerPortalController extends Controller
             'pendingApprovalRequest',
             'attachments.comments.replies.user',
             'attachments.comments.user'
-        ])
-        ->where('tracking_token', $token)
-        ->orWhere('ticket_number', $token)
-        ->orWhere('qr_code', $token)
-        ->firstOrFail();
+        ]);
 
         $stages = JobOrder::STAGES;
         $currentStageIndex = array_search($jobOrder->status, $stages);
@@ -96,10 +95,11 @@ class CustomerPortalController extends Controller
 
     public function progressUpdates(string $token)
     {
-        $jobOrder = JobOrder::where('tracking_token', $token)
-            ->orWhere('ticket_number', $token)
-            ->orWhere('qr_code', $token)
-            ->firstOrFail();
+        $jobOrder = JobOrder::findByReference($token);
+
+        if (!$jobOrder) {
+            return response()->json(['error' => 'Job order not found'], 404);
+        }
 
         return response()->json([
             'current_percentage' => $jobOrder->current_percentage,

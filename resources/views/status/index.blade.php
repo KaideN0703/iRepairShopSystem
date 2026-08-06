@@ -11,7 +11,7 @@
         </div>
         <h1 class="text-3xl font-extrabold text-ir-bone">Track Device Repair Status Live</h1>
         <p class="text-sm text-ir-bone/70 max-w-md mx-auto">
-            Enter your repair ticket number (e.g. <strong class="text-ir-amber-deep font-mono">JO-2026-0001</strong>) found on your receipt to view real-time pipeline status updates.
+            Enter your repair ticket number (e.g. <strong class="text-ir-amber-deep font-mono">JO-2026-0001</strong>), invoice number (<strong class="text-ir-amber-deep font-mono">INV-2026-0001</strong>), device serial number, or phone number to view live repair progress.
         </p>
     </div>
 
@@ -26,7 +26,7 @@
 
         <div class="relative">
             <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-ir-copper"><i class="fa-solid fa-ticket"></i></span>
-            <input type="text" name="ticket_number" value="{{ old('ticket_number') }}" placeholder="Enter ticket # (JO-2026-0001)..." required class="w-full pl-11 pr-4 py-4 rounded-md bg-ir-carbon border border-ir-copper text-ir-bone text-base font-mono focus:outline-none focus:border-ir-gold">
+            <input type="text" name="ticket_number" value="{{ old('ticket_number') }}" placeholder="Enter ticket #, invoice #, or phone number..." required class="w-full pl-11 pr-4 py-4 rounded-md bg-ir-carbon border border-ir-copper text-ir-bone text-base font-mono focus:outline-none focus:border-ir-gold">
         </div>
 
         <button type="submit" class="w-full py-4 rounded-md bg-ir-gold hover:bg-ir-amber-deep text-ir-bone font-bold text-sm transition-colors">

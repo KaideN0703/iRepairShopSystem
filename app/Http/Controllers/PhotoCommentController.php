@@ -43,10 +43,11 @@ class PhotoCommentController extends Controller
      */
     public function storeCustomerComment(Request $request, string $token)
     {
-        $jobOrder = JobOrder::where('tracking_token', $token)
-            ->orWhere('ticket_number', $token)
-            ->orWhere('qr_code', $token)
-            ->firstOrFail();
+        $jobOrder = JobOrder::findByReference($token);
+
+        if (!$jobOrder) {
+            abort(404, 'Invalid tracking token or ticket number.');
+        }
 
         $request->validate([
             'photo_type' => 'required|string|in:progress_photo,attachment',

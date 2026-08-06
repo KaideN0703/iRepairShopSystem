@@ -76,6 +76,70 @@ class JobOrder extends Model
         });
     }
 
+    /**
+     * Flexible reference lookup for ticket numbers, tokens, invoices, serial numbers, phone numbers, etc.
+     */
+    public static function findByReference(?string $reference): ?self
+    {
+        $clean = trim((string) $reference);
+        if (empty($clean)) {
+            return null;
+        }
+
+        // Strip common leading prefix noise: #, Ticket#, Ref#, Invoice#, etc.
+        $normalized = preg_replace('/^(ticket|ref|reference|inv|invoice|order|jo)?[\s#:\-]+/i', '', $clean);
+
+        $upperClean = strtoupper($clean);
+        $upperNorm = strtoupper($normalized);
+        $noSymbols = preg_replace('/[^A-Za-z0-9]/', '', $clean);
+        $noSymbolsNorm = preg_replace('/[^A-Za-z0-9]/', '', $normalized);
+        $withHyphensNorm = str_replace(' ', '-', $upperNorm);
+
+        $candidates = array_values(array_unique(array_filter([
+            $clean,
+            $upperClean,
+            $upperNorm,
+            $withHyphensNorm,
+            'JO-' . $upperNorm,
+            'JO-' . $withHyphensNorm,
+            'INV-' . $upperNorm,
+            'INV-' . $withHyphensNorm,
+            strtoupper($noSymbols),
+            strtoupper($noSymbolsNorm),
+            'JO' . strtoupper($noSymbolsNorm),
+        ])));
+
+        if (preg_match('/^(\d{4})[\s\-]?(\d{4})$/', $noSymbolsNorm, $m)) {
+            $candidates[] = 'JO-' . $m[1] . '-' . $m[2];
+            $candidates[] = 'INV-' . $m[1] . '-' . $m[2];
+        }
+
+        $digitsOnly = preg_replace('/[^\d]/', '', $clean);
+
+        return self::where(function ($query) use ($candidates, $clean, $upperNorm, $digitsOnly) {
+            $query->whereIn(\DB::raw('UPPER(ticket_number)'), array_map('strtoupper', $candidates))
+                ->orWhereIn(\DB::raw('REPLACE(UPPER(ticket_number), "-", "")'), array_map('strtoupper', $candidates))
+                ->orWhereIn(\DB::raw('REPLACE(UPPER(ticket_number), " ", "")'), array_map('strtoupper', $candidates))
+                ->orWhereIn(\DB::raw('UPPER(tracking_token)'), array_map('strtoupper', $candidates))
+                ->orWhereIn(\DB::raw('UPPER(qr_code)'), array_map('strtoupper', $candidates))
+                ->orWhereHas('invoice', function ($q) use ($candidates) {
+                    $q->whereIn(\DB::raw('UPPER(invoice_number)'), array_map('strtoupper', $candidates))
+                      ->orWhereIn(\DB::raw('REPLACE(UPPER(invoice_number), "-", "")'), array_map('strtoupper', $candidates));
+                })
+                ->orWhereHas('device', function ($q) use ($clean, $upperNorm) {
+                    $q->where(\DB::raw('UPPER(serial_number)'), $upperNorm)
+                      ->orWhere(\DB::raw('UPPER(serial_number)'), 'LIKE', "%{$upperNorm}%");
+                })
+                ->orWhereHas('customer', function ($q) use ($clean, $upperNorm, $digitsOnly) {
+                    $q->where(\DB::raw('UPPER(customer_code)'), $upperNorm)
+                      ->orWhere('email', 'LIKE', $clean)
+                      ->when(!empty($digitsOnly) && strlen($digitsOnly) >= 4, function ($sq) use ($digitsOnly) {
+                          $sq->orWhere(\DB::raw('REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(phone, "+", ""), "-", ""), " ", ""), "(", ""), ")", "")'), 'LIKE', "%{$digitsOnly}%");
+                      });
+                });
+        })->first();
+    }
+
     public function customer()
     {
         return $this->belongsTo(Customer::class);
