@@ -58,6 +58,7 @@
             </div>
         </div>
 
+        @if($totalRevenueMonth !== null)
         {{-- Monthly Revenue --}}
         <div class="ir-stat-card">
             <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:0.5rem;">
@@ -73,6 +74,7 @@
                 </div>
             </div>
         </div>
+        @endif
 
     </div>
 
@@ -122,6 +124,7 @@
          ================================================================ --}}
     <div style="display:grid; grid-template-columns:1fr; gap:1rem;" class="lg:grid-cols-3">
 
+        @if(!empty($incomeForecast['labels']))
         {{-- Income Chart --}}
         <div class="ir-card" style="grid-column: span 2;">
             <div class="ir-card-header">
@@ -152,6 +155,7 @@
                 <canvas id="incomeChart"></canvas>
             </div>
         </div>
+        @endif
 
         {{-- Low Stock Alerts --}}
         <div class="ir-card">
@@ -189,11 +193,13 @@
                 </div>
             @endif
 
+            @canany(['suppliers.view', 'suppliers.manage'])
             <div style="margin-top:1rem; padding-top:0.75rem; border-top:1px solid rgba(122,74,18,0.35);">
                 <a href="{{ route('suppliers.index') }}" class="btn-secondary btn-sm" style="width:100%; justify-content:center;">
                     <i class="fa-solid fa-truck-field"></i> Restock via Suppliers
                 </a>
             </div>
+            @endcanany
         </div>
 
     </div>

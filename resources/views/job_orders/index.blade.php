@@ -30,9 +30,11 @@
             </button>
         </form>
 
+        @can('jobs.create')
         <a href="{{ route('job_orders.create') }}" class="w-full sm:w-auto py-2.5 px-5 rounded-md bg-ir-gold hover:bg-ir-amber-deep text-ir-bone font-bold text-sm transition-colors flex items-center justify-center gap-2 shadow-sm shrink-0">
             <i class="fa-solid fa-plus"></i> New Ticket
         </a>
+        @endcan
     </div>
 
     <!-- Job Orders Data Table -->
@@ -125,9 +127,11 @@
                                                 <i class="fa-solid fa-rotate-left"></i> Reset Filters
                                             </a>
                                         @endif
+                                        @can('jobs.create')
                                         <a href="{{ route('job_orders.create') }}" class="btn-primary btn-sm">
                                             <i class="fa-solid fa-plus"></i> Create New Ticket
                                         </a>
+                                        @endcan
                                     </div>
                                 </div>
                             </td>

@@ -62,6 +62,7 @@
         <h4 class="text-xs font-bold text-ir-bone/70 uppercase tracking-wider mb-3">
             <i class="fa-solid fa-user-gear text-ir-gold mr-1"></i> Assigned Technician
         </h4>
+        @can('repairs.assign')
         <form action="{{ route('job_orders.assign_technician', $jobOrder) }}" method="POST" class="flex gap-2">
             @csrf
             <select name="technician_id" class="ir-select flex-1 text-sm">
@@ -74,6 +75,17 @@
             </select>
             <button type="submit" class="btn-primary btn-sm">Assign</button>
         </form>
+        @else
+        <div class="text-xs font-semibold text-ir-bone flex items-center gap-2">
+            @if($jobOrder->technician)
+                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-ir-carbon text-ir-amber-deep border border-ir-copper">
+                    <i class="fa-solid fa-user-gear"></i> {{ $jobOrder->technician->name }} ({{ $jobOrder->technician->specialty }})
+                </span>
+            @else
+                <span class="text-ir-copper italic">Unassigned</span>
+            @endif
+        </div>
+        @endcan
     </div>
 
     {{-- Internal Notes --}}

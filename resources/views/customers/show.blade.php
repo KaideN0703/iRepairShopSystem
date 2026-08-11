@@ -24,12 +24,16 @@
         </div>
 
         <div class="flex items-center gap-3">
+            @canany(['devices.create', 'customers.manage', 'jobs.create'])
             <a href="{{ route('devices.create', ['customer_id' => $customer->id]) }}" class="px-4 py-2 rounded-md bg-ir-carbon hover:bg-ir-carbon text-ir-bone text-xs font-semibold">
                 + Register Device
             </a>
+            @endcanany
+            @can('jobs.create')
             <a href="{{ route('job_orders.create', ['customer_id' => $customer->id]) }}" class="px-4 py-2 rounded-md bg-ir-gold hover:bg-ir-amber-deep text-ir-bone text-xs font-semibold transition-colors">
                 + New Repair Ticket
             </a>
+            @endcan
         </div>
     </div>
 
@@ -52,7 +56,9 @@
                         <p class="text-xs text-ir-bone/70">S/N: {{ $dev->serial_number ?? 'N/A' }} | Color: {{ $dev->color ?? 'N/A' }}</p>
                         <div class="pt-2 border-t border-ir-copper/80 flex justify-between items-center text-xs">
                             <span class="text-ir-gold">Passcode: {{ $dev->passcode_pattern ?? 'None' }}</span>
+                            @can('jobs.create')
                             <a href="{{ route('job_orders.create', ['customer_id' => $customer->id]) }}" class="text-ir-bone hover:text-ir-bone hover:underline">Repair Device →</a>
+                            @endcan
                         </div>
                     </div>
                 @empty

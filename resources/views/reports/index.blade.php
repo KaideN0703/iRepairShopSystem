@@ -24,17 +24,21 @@
 
     <!-- Overview Financial & Repair Stats -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        @if($totalRevenue !== null)
         <div class="bg-ir-carbon border border-ir-copper rounded-md p-5">
             <span class="text-xs font-semibold text-ir-bone/70 uppercase tracking-wider">Total Service Revenue</span>
             <h3 class="text-2xl font-extrabold text-emerald-400 mt-1">₱{{ number_format($totalRevenue, 2) }}</h3>
             <span class="text-xs text-emerald-400/80 mt-1 inline-block font-mono">Paid & completed jobs</span>
         </div>
+        @endif
 
+        @if($totalPartsProfit !== null)
         <div class="bg-ir-carbon border border-ir-copper rounded-md p-5">
             <span class="text-xs font-semibold text-ir-bone/70 uppercase tracking-wider">Net Parts Profit</span>
             <h3 class="text-2xl font-extrabold text-ir-gold mt-1">₱{{ number_format($totalPartsProfit, 2) }}</h3>
             <span class="text-xs text-ir-gold/80 mt-1 inline-block font-mono">Retail sales minus cost</span>
         </div>
+        @endif
 
         <div class="bg-ir-carbon border border-ir-copper rounded-md p-5">
             <span class="text-xs font-semibold text-ir-bone/70 uppercase tracking-wider">Total Completed Jobs</span>
@@ -42,16 +46,20 @@
             <span class="text-xs text-ir-bone/70 mt-1 inline-block font-mono">Successfully repaired</span>
         </div>
 
+        @if($outstandingBalance !== null)
         <div class="bg-ir-carbon border border-ir-copper rounded-md p-5">
             <span class="text-xs font-semibold text-ir-bone/70 uppercase tracking-wider">Outstanding Invoices</span>
             <h3 class="text-2xl font-extrabold text-red-400 mt-1">₱{{ number_format($outstandingBalance, 2) }}</h3>
             <span class="text-xs text-red-400/80 mt-1 inline-block font-mono">Pending customer payments</span>
         </div>
+        @endif
     </div>
 
+    @if(!empty($incomeForecast['labels']) || !empty($inventoryForecast))
     <!-- Forecasting & Analytics Section -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
+        @if(!empty($incomeForecast['labels']))
         <!-- Monthly Income Trend Forecast Chart -->
         <div class="bg-ir-carbon border border-ir-copper rounded-md p-6 space-y-4">
             <h4 class="text-sm font-bold text-ir-bone uppercase tracking-wider flex items-center justify-between border-b border-ir-copper pb-3">
@@ -63,7 +71,9 @@
                 <canvas id="forecastChart"></canvas>
             </div>
         </div>
+        @endif
 
+        @if(!empty($inventoryForecast))
         <!-- Inventory Demand Forecasting (Moving Average) -->
         <div class="bg-ir-carbon border border-ir-copper rounded-md p-6 space-y-4">
             <h4 class="text-sm font-bold text-ir-bone uppercase tracking-wider border-b border-ir-copper pb-3 flex items-center justify-between">
@@ -109,11 +119,13 @@
                 </table>
             </div>
         </div>
+        @endif
 
     </div>
+    @endif
 
     <!-- Technician Performance & Best Selling Parts Tables -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 {{ $bestSellingParts->isNotEmpty() ? 'lg:grid-cols-2' : '' }} gap-6">
 
         <!-- Technician Performance Report -->
         <div class="bg-ir-carbon border border-ir-copper rounded-md p-6 space-y-4">
@@ -145,6 +157,7 @@
             </div>
         </div>
 
+        @if($bestSellingParts->isNotEmpty())
         <!-- Best-Selling Parts Report -->
         <div class="bg-ir-carbon border border-ir-copper rounded-md p-6 space-y-4">
             <h4 class="text-sm font-bold text-ir-bone uppercase tracking-wider border-b border-ir-copper pb-3">
@@ -176,15 +189,19 @@
                 </table>
             </div>
         </div>
+        @endif
 
     </div>
 
 </div>
 
+@if(!empty($incomeForecast['labels']))
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const ctx = document.getElementById('forecastChart').getContext('2d');
+        const canvas = document.getElementById('forecastChart');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
         const data = @json($incomeForecast);
 
         new Chart(ctx, {
@@ -216,4 +233,5 @@
     });
 </script>
 @endpush
+@endif
 @endsection

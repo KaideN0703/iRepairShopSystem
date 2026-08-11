@@ -15,9 +15,11 @@
         </div>
 
         <div class="flex items-center gap-3">
+            @can('jobs.create')
             <a href="{{ route('job_orders.create', ['customer_id' => $device->customer_id]) }}" class="px-4 py-2 rounded-md bg-ir-gold hover:bg-ir-amber-deep text-ir-bone text-xs font-semibold transition-colors">
                 + Create Repair Ticket
             </a>
+            @endcan
         </div>
     </div>
 

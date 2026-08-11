@@ -16,9 +16,11 @@
             </p>
         </div>
 
+        @can('warranty.claim')
         <button @click="openClaimModal = true" class="px-5 py-2.5 rounded-md bg-amber-600 hover:bg-amber-500 text-ir-bone text-xs font-bold shadow-lg shadow-amber-600/30">
             <i class="fa-solid fa-file-circle-exclamation mr-1"></i> File Warranty Claim
         </button>
+        @endcan
     </div>
 
     <!-- Warranty Policy Card -->
@@ -59,6 +61,7 @@
         </div>
     </div>
 
+    @can('warranty.claim')
     <!-- File Claim Modal -->
     <div x-show="openClaimModal" class="fixed inset-0 z-50 bg-ir-void/80 backdrop-blur-sm flex items-center justify-center p-4" x-cloak>
         <div class="bg-ir-carbon border border-ir-copper rounded-md p-6 max-w-md w-full space-y-4 shadow-2xl">
@@ -84,6 +87,7 @@
             </form>
         </div>
     </div>
+    @endcan
 
 </div>
 @endsection

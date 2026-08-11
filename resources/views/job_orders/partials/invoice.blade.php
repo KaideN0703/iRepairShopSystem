@@ -21,11 +21,13 @@
                 <a href="{{ route('invoices.pdf', $invoice) }}" class="btn-secondary btn-sm">
                     <i class="fa-solid fa-file-pdf text-red-400"></i> PDF
                 </a>
+                @can('invoices.manage')
                 @if($invoice->payment_status !== 'paid')
                 <button @click="openPayModal = true" class="btn-primary btn-sm">
                     <i class="fa-solid fa-cash-register"></i> Record Payment
                 </button>
                 @endif
+                @endcan
             </div>
         </div>
 
@@ -155,6 +157,7 @@
                 <p class="text-xs text-ir-bone/60 leading-relaxed">
                     Generate an official billing invoice summarizing labor, parts, and service fees for customer payment processing.
                 </p>
+                @can('invoices.manage')
                 <div class="pt-2">
                     <form action="{{ route('invoices.generate', $jobOrder) }}" method="POST" class="inline-block">
                         @csrf
@@ -163,6 +166,7 @@
                         </button>
                     </form>
                 </div>
+                @endcan
             </div>
         </div>
     @endif
@@ -173,6 +177,7 @@
             <i class="fa-solid fa-calculator text-ir-gold mr-1"></i> Cost Calculator
             <span class="ml-2 text-ir-gold font-mono text-sm"><x-currency :amount="$jobOrder->total_cost" /></span>
         </h4>
+        @can('estimation.manage.full')
         <form action="{{ route('job_orders.update_costs', $jobOrder) }}" method="POST" class="space-y-3 text-xs">
             @csrf
             @method('PATCH')
@@ -207,6 +212,26 @@
                 <i class="fa-solid fa-calculator"></i> Recalculate Total Cost
             </button>
         </form>
+        @else
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs text-ir-bone/80">
+            <div class="p-2.5 rounded bg-ir-carbon border border-ir-copper">
+                <span class="block text-[10px] text-ir-bone/60 uppercase">Labor Cost</span>
+                <span class="font-bold text-ir-bone font-mono"><x-currency :amount="$jobOrder->labor_cost" /></span>
+            </div>
+            <div class="p-2.5 rounded bg-ir-carbon border border-ir-copper">
+                <span class="block text-[10px] text-ir-bone/60 uppercase">Parts Cost</span>
+                <span class="font-bold text-ir-bone font-mono"><x-currency :amount="$jobOrder->parts_cost" /></span>
+            </div>
+            <div class="p-2.5 rounded bg-ir-carbon border border-ir-copper">
+                <span class="block text-[10px] text-ir-bone/60 uppercase">Service Fee</span>
+                <span class="font-bold text-ir-bone font-mono"><x-currency :amount="$jobOrder->service_fee" /></span>
+            </div>
+            <div class="p-2.5 rounded bg-ir-carbon border border-ir-copper">
+                <span class="block text-[10px] text-ir-bone/60 uppercase">Total Cost</span>
+                <span class="font-bold text-ir-gold font-mono"><x-currency :amount="$jobOrder->total_cost" /></span>
+            </div>
+        </div>
+        @endcan
     </div>
 
     {{-- Parts Management --}}
