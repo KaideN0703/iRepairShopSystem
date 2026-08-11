@@ -38,7 +38,7 @@ class JobOrderController extends Controller
 
         $jobOrders = JobOrder::with(['customer', 'device', 'technician'])
             // Technicians only see their own jobs
-            ->when($user->can('repairs.view.own') && !$user->can('repairs.manage') && !$user->can('jobs.manage.full'), function ($q) use ($user) {
+            ->when($user->hasRole('technician') || ($user->can('repairs.view.own') && !$user->can('jobs.manage.full') && !$user->hasAnyRole(['admin', 'shop_manager', 'cashier'])), function ($q) use ($user) {
                 $q->where('technician_id', $user->technician?->id);
             })
             ->when($status, function ($q, $status) {
@@ -160,6 +160,7 @@ class JobOrderController extends Controller
 
     public function show(JobOrder $jobOrder)
     {
+        $this->authorize('view', $jobOrder);
         $jobOrder->load([
             'customer',
             'device',

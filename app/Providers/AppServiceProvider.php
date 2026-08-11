@@ -31,5 +31,36 @@ class AppServiceProvider extends ServiceProvider
 
         // Centralized technician job-scope policy consumed by all job-related controllers.
         Gate::policy(JobOrder::class, RepairJobPolicy::class);
+
+        // Scoped view gates
+        Gate::define('customers.view.scoped', function ($user, $customer = null) {
+            if ($user->hasAnyRole(['admin', 'shop_manager', 'cashier'])) {
+                return true;
+            }
+            if ($customer) {
+                return $customer->devices()
+                    ->whereHas('jobOrders', fn ($q) => $q->where('technician_id', $user->technician?->id))
+                    ->exists();
+            }
+            return $user->hasRole('technician');
+        });
+
+        Gate::define('warranty.view.scoped', function ($user, $warranty = null) {
+            if ($user->hasAnyRole(['admin', 'shop_manager', 'cashier'])) {
+                return true;
+            }
+            if ($warranty) {
+                return $warranty->jobOrder?->technician_id === $user->technician?->id;
+            }
+            return $user->hasRole('technician');
+        });
+
+        Gate::define('inventory.view', fn ($user) => $user->hasAnyRole(['admin', 'shop_manager', 'technician', 'inventory_staff']));
+
+        Gate::define('reports.view.own', fn ($user) => $user->hasAnyRole(['admin', 'shop_manager', 'technician']));
+
+        Gate::define('technicians.view.assignments', fn ($user) =>
+            $user->hasAnyRole(['admin', 'shop_manager', 'cashier', 'technician'])
+        );
     }
 }

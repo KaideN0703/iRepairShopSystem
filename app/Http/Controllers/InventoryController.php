@@ -15,7 +15,7 @@ class InventoryController extends Controller
 {
     public function index(Request $request)
     {
-        $this->authorize('parts.usage.view');
+        abort_unless(auth()->user()->canAny(['inventory.view', 'parts.usage.view', 'parts.catalog.manage']), 403);
 
         $search = $request->query('search');
         $categoryId = $request->query('category_id');
@@ -110,7 +110,7 @@ class InventoryController extends Controller
 
     public function show(Part $part)
     {
-        $this->authorize('parts.usage.view');
+        abort_unless(auth()->user()->canAny(['inventory.view', 'parts.usage.view', 'parts.catalog.manage']), 403);
         $part->load(['category', 'supplier', 'stockMovements.user', 'jobOrderParts.jobOrder.customer', 'jobOrderParts.jobOrder.device']);
         return view('inventory.show', compact('part'));
     }

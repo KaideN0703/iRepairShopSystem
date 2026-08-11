@@ -118,7 +118,7 @@
                     @endcanany
 
                     {{-- Customers: visible to those who can view or manage customers --}}
-                    @canany(['customers.view', 'customers.manage'])
+                    @canany(['customers.view', 'customers.view.scoped', 'customers.manage'])
                     <a href="{{ route('customers.index') }}" class="nav-item {{ request()->routeIs('customers.*') ? 'active' : '' }}">
                         <i class="fa-solid fa-users"></i>
                         <span>Customers</span>
@@ -126,7 +126,7 @@
                     @endcanany
 
                     {{-- Devices: visible to those who can view customers or create jobs --}}
-                    @canany(['customers.view', 'jobs.create'])
+                    @canany(['customers.view', 'customers.view.scoped', 'jobs.create'])
                     <a href="{{ route('devices.index') }}" class="nav-item {{ request()->routeIs('devices.*') ? 'active' : '' }}">
                         <i class="fa-solid fa-mobile-screen-button"></i>
                         <span>Devices</span>
@@ -142,13 +142,13 @@
                     @endcan
 
                     {{-- Section: Inventory & Supply --}}
-                    @canany(['parts.usage.view', 'parts.catalog.manage', 'suppliers.view', 'suppliers.manage'])
+                    @canany(['inventory.view', 'parts.usage.view', 'parts.catalog.manage', 'suppliers.view', 'suppliers.manage'])
                     <div class="pt-4 pb-1 px-1 mb-1">
                         <span class="nav-section-label">Inventory &amp; Supply</span>
                     </div>
                     @endcanany
 
-                    @canany(['parts.usage.view', 'parts.catalog.manage'])
+                    @canany(['inventory.view', 'parts.usage.view', 'parts.catalog.manage'])
                     <a href="{{ route('inventory.index') }}" class="nav-item {{ request()->routeIs('inventory.*') ? 'active' : '' }}">
                         <i class="fa-solid fa-boxes-stacked"></i>
                         <span>Inventory &amp; Parts</span>
@@ -163,7 +163,7 @@
                     @endcanany
 
                     {{-- Section: Billing & Compliance --}}
-                    @canany(['invoices.manage', 'warranty.view', 'warranty.claim', 'warranty.manage'])
+                    @canany(['invoices.manage', 'warranty.view', 'warranty.view.scoped', 'warranty.claim', 'warranty.manage'])
                     <div class="pt-4 pb-1 px-1 mb-1">
                         <span class="nav-section-label">Billing &amp; Compliance</span>
                     </div>
@@ -176,7 +176,7 @@
                     </a>
                     @endcan
 
-                    @canany(['warranty.view', 'warranty.claim', 'warranty.manage'])
+                    @canany(['warranty.view', 'warranty.view.scoped', 'warranty.claim', 'warranty.manage'])
                     <a href="{{ route('warranties.index') }}" class="nav-item {{ request()->routeIs('warranties.*') ? 'active' : '' }}">
                         <i class="fa-solid fa-shield-halved"></i>
                         <span>Warranties</span>
@@ -290,10 +290,12 @@
                     </a>
 
                     {{-- New Job Order Action Button --}}
+                    @can('jobs.create')
                     <a href="{{ route('job_orders.create') }}" class="btn-primary">
                         <i class="fa-solid fa-plus text-xs"></i>
                         <span>New Job Order</span>
                     </a>
+                    @endcan
                 </div>
             </header>
 

@@ -12,11 +12,17 @@ class CustomerController extends Controller
 {
     public function index(Request $request)
     {
-        $this->authorize('customers.view');
+        $user = Auth::user();
+        abort_unless($user->can('customers.view') || $user->can('customers.view.scoped'), 403);
 
         $search = $request->query('search');
 
         $customers = Customer::withCount(['devices', 'jobOrders', 'warranties'])
+            ->when(!$user->can('customers.view'), function ($query) use ($user) {
+                $query->whereHas('devices.jobOrders', function ($q) use ($user) {
+                    $q->where('technician_id', $user->technician?->id);
+                });
+            })
             ->when($search, function ($query, $search) {
                 $query->where('name', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%")
@@ -68,7 +74,7 @@ class CustomerController extends Controller
 
     public function show(Customer $customer)
     {
-        $this->authorize('customers.view');
+        $this->authorize('customers.view.scoped', $customer);
 
         $customer->load([
             'devices.jobOrders',

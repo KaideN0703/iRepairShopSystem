@@ -12,11 +12,17 @@ class DeviceController extends Controller
 {
     public function index(Request $request)
     {
-        $this->authorize('customers.view');
+        $user = Auth::user();
+        abort_unless($user->can('customers.view') || $user->can('customers.view.scoped'), 403);
 
         $search = $request->query('search');
 
         $devices = Device::with('customer')
+            ->when(!$user->can('customers.view'), function ($query) use ($user) {
+                $query->whereHas('jobOrders', function ($q) use ($user) {
+                    $q->where('technician_id', $user->technician?->id);
+                });
+            })
             ->when($search, function ($query, $search) {
                 $query->where('brand', 'like', "%{$search}%")
                     ->orWhere('model', 'like', "%{$search}%")
@@ -33,7 +39,7 @@ class DeviceController extends Controller
 
     public function create(Request $request)
     {
-        abort_unless(auth()->user()->canAny(['customers.manage', 'jobs.create']), 403);
+        abort_unless(auth()->user()->canAny(['customers.manage', 'jobs.create', 'devices.create']), 403);
 
         $customerId = $request->query('customer_id');
         $customers = Customer::orderBy('name')->get();
@@ -42,7 +48,7 @@ class DeviceController extends Controller
 
     public function store(Request $request)
     {
-        abort_unless(auth()->user()->canAny(['customers.manage', 'jobs.create']), 403);
+        abort_unless(auth()->user()->canAny(['customers.manage', 'jobs.create', 'devices.create']), 403);
 
         $validated = $request->validate([
             'customer_id' => 'required|exists:customers,id',
@@ -72,7 +78,13 @@ class DeviceController extends Controller
 
     public function show(Device $device)
     {
-        $this->authorize('customers.view');
+        $user = Auth::user();
+        abort_unless(
+            $user->can('customers.view') ||
+            ($user->can('customers.view.scoped') && $device->jobOrders()->where('technician_id', $user->technician?->id)->exists()),
+            403
+        );
+
         $device->load(['customer', 'jobOrders.technician', 'warranties', 'attachments']);
         return view('devices.show', compact('device'));
     }

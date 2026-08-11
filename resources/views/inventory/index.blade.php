@@ -50,9 +50,11 @@
             </button>
         </form>
 
+        @can('parts.catalog.manage')
         <a href="{{ route('inventory.create') }}" class="w-full sm:w-auto px-5 py-2.5 rounded-md bg-ir-gold hover:bg-ir-amber-deep text-ir-bone font-semibold text-sm flex items-center justify-center gap-2 transition-colors">
             <i class="fa-solid fa-plus"></i> Add New Part
         </a>
+        @endcan
     </div>
 
     <!-- Inventory Table -->
@@ -108,12 +110,14 @@
                                     <a href="{{ route('inventory.barcode', $p) }}" target="_blank" class="p-2 rounded-lg bg-ir-carbon hover:bg-ir-carbon text-ir-bone hover:text-ir-bone" title="Print Barcode Label">
                                         <i class="fa-solid fa-barcode"></i>
                                     </a>
-                                    <a href="{{ route('inventory.show', $p) }}" class="p-2 rounded-lg bg-ir-carbon hover:bg-ir-carbon text-ir-bone hover:text-ir-bone" title="View & Adjust Stock">
+                                    <a href="{{ route('inventory.show', $p) }}" class="p-2 rounded-lg bg-ir-carbon hover:bg-ir-carbon text-ir-bone hover:text-ir-bone" title="View Details">
                                         <i class="fa-solid fa-boxes-packing"></i>
                                     </a>
+                                    @can('parts.catalog.manage')
                                     <a href="{{ route('inventory.edit', $p) }}" class="p-2 rounded-lg bg-ir-carbon hover:bg-ir-carbon text-ir-bone hover:text-ir-bone" title="Edit Part">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </a>
+                                    @endcan
                                 </div>
                             </td>
                         </tr>

@@ -22,9 +22,11 @@
             <a href="{{ route('inventory.barcode', $part) }}" target="_blank" class="px-4 py-2 rounded-md bg-ir-carbon hover:bg-ir-carbon text-ir-bone text-xs font-semibold">
                 <i class="fa-solid fa-barcode mr-1"></i> Print Label
             </a>
+            @can('parts.catalog.manage')
             <a href="{{ route('inventory.edit', $part) }}" class="px-4 py-2 rounded-md bg-ir-gold hover:bg-ir-amber-deep text-ir-bone text-xs font-semibold transition-colors">
                 <i class="fa-solid fa-pen-to-square mr-1"></i> Edit Details
             </a>
+            @endcan
         </div>
     </div>
 
@@ -34,10 +36,11 @@
         <!-- Stock Adjust Box -->
         <div class="bg-ir-carbon border border-ir-copper rounded-md p-6 space-y-4">
             <h4 class="text-xs font-bold text-ir-bone/70 uppercase tracking-wider border-b border-ir-copper pb-3 flex items-center justify-between">
-                <span><i class="fa-solid fa-boxes-packing text-ir-gold mr-1"></i> Stock Management</span>
+                <span><i class="fa-solid fa-boxes-packing text-ir-gold mr-1"></i> Stock Status</span>
                 <span class="text-sm font-bold text-ir-bone">{{ $part->stock_quantity }} units</span>
             </h4>
 
+            @can('parts.catalog.manage')
             <form action="{{ route('inventory.adjust_stock', $part) }}" method="POST" class="space-y-4">
                 @csrf
                 <div>
@@ -63,6 +66,14 @@
                     Apply Stock Adjustment
                 </button>
             </form>
+            @else
+            <div class="text-xs text-ir-bone/70 space-y-2">
+                <p><strong>Cost Price:</strong> ₱{{ number_format($part->cost_price, 2) }}</p>
+                <p><strong>Selling Price:</strong> ₱{{ number_format($part->selling_price, 2) }}</p>
+                <p><strong>Reorder Level:</strong> {{ $part->reorder_level }} units</p>
+                <p class="text-[11px] text-ir-copper">Read-only catalog access. Stock adjustments are reserved for Inventory Staff & Management.</p>
+            </div>
+            @endcan
         </div>
 
         <!-- Stock Movements Log (2 cols) -->

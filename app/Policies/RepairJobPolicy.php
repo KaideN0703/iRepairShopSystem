@@ -26,6 +26,22 @@ class RepairJobPolicy
     }
 
     /**
+     * Determine if a user can view a specific job order.
+     */
+    public function view(User $user, JobOrder $job): bool
+    {
+        if ($user->can('jobs.manage.full') || $user->can('repairs.view.status') || $user->hasAnyRole(['admin', 'shop_manager', 'cashier'])) {
+            return true;
+        }
+
+        if ($user->can('repairs.view.own') || $user->can('repairs.manage') || $user->hasRole('technician')) {
+            return $job->technician_id === $user->technician?->id;
+        }
+
+        return false;
+    }
+
+    /**
      * admin / shop_manager always pass via Gate::before; this handles technicians.
      * A technician may only act on jobs where their technician_id matches the job.
      */

@@ -19,7 +19,10 @@ class DashboardController extends Controller
         $user = Auth::user();
 
         // ── Job status counts (scoped by role) ──────────────────────────────
-        if ($user->can('dashboard.view.all') || $user->can('repairs.view.status') || $user->can('jobs.manage.full') || $user->can('dashboard.view.inventory')) {
+        $isFullView = $user->can('dashboard.view.all') || $user->can('repairs.view.status') || $user->can('jobs.manage.full') || $user->hasAnyRole(['admin', 'shop_manager', 'cashier']);
+        $technicianId = $user->technician?->id;
+
+        if ($isFullView && !$user->hasRole('technician')) {
             // shop_manager / admin / cashier / inventory_staff: full shop-wide view
             $statusCounts = [
                 'Received'          => JobOrder::where('status', 'Received')->count(),
@@ -33,7 +36,6 @@ class DashboardController extends Controller
             ];
         } else {
             // technician: only their assigned jobs
-            $technicianId = $user->technician?->id;
             $statusCounts = [
                 'Received'          => JobOrder::where('status', 'Received')->where('technician_id', $technicianId)->count(),
                 'Diagnosing'        => JobOrder::where('status', 'Diagnosing')->where('technician_id', $technicianId)->count(),
@@ -52,7 +54,7 @@ class DashboardController extends Controller
         $claimedCount   = $statusCounts['Released'] ?? 0;
 
         // ── Low-stock widget ────────────────────────────────────────────────
-        $lowStockParts = ($user->can('dashboard.view.inventory') || $user->can('dashboard.view.all') || $user->can('dashboard.view.own'))
+        $lowStockParts = ($user->can('inventory.view') || $user->can('dashboard.view.inventory') || $user->can('dashboard.view.all') || $user->can('dashboard.view.own'))
             ? Part::with('category', 'supplier')->whereColumn('stock_quantity', '<=', 'reorder_level')->get()
             : collect();
 
@@ -70,6 +72,9 @@ class DashboardController extends Controller
 
         // ── Recent activity feed ─────────────────────────────────────────────
         $recentActivities = JobOrderStatusHistory::with('jobOrder.device', 'jobOrder.customer', 'user')
+            ->when(!$isFullView || $user->hasRole('technician'), function ($q) use ($technicianId) {
+                $q->whereHas('jobOrder', fn ($jq) => $jq->where('technician_id', $technicianId));
+            })
             ->latest()
             ->take(10)
             ->get();

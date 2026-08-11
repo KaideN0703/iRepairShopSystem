@@ -57,7 +57,7 @@ class TechnicianController extends Controller
             'is_active' => true,
         ]);
 
-        $techRole = Role::findOrCreate('Technician');
+        $techRole = Role::findOrCreate('technician');
         $user->assignRole($techRole);
 
         $tech = Technician::create([
@@ -153,6 +153,34 @@ class TechnicianController extends Controller
                 'specialty'      => $t->specialty,
                 'open_job_count' => $t->open_job_count,
             ]);
+
+        return response()->json($technicians);
+    }
+
+    /**
+     * Shared handoff visibility endpoint for cashier & technician.
+     * Returns read-only colleague name + current customer/job assignment without contact info.
+     * Gated by technicians.view.assignments.
+     */
+    public function assignments()
+    {
+        $this->authorize('technicians.view.assignments');
+
+        $technicians = Technician::where('is_active', true)
+            ->with(['jobOrders' => function ($q) {
+                $q->whereIn('status', ['Received', 'Diagnosing', 'Waiting for Parts', 'Under Repair', 'Testing'])
+                  ->with('customer:id,name');
+            }])
+            ->get(['id', 'name'])
+            ->map(function ($t) {
+                $currentJob = $t->jobOrders->first();
+                return [
+                    'id'               => $t->id,
+                    'name'             => $t->name,
+                    'current_customer' => $currentJob?->customer?->name ?? 'None',
+                    'job_status'       => $currentJob?->status ?? 'Available',
+                ];
+            });
 
         return response()->json($technicians);
     }

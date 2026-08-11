@@ -27,16 +27,27 @@ class ReportController extends Controller
         $startDate = $request->query('start_date', now()->startOfMonth()->toDateString());
         $endDate   = $request->query('end_date', now()->endOfMonth()->toDateString());
 
-        // 1. Repair Metrics (own or all)
-        $totalJobs = ($user->can('reports.view.own') || $user->can('reports.view.financial'))
-            ? JobOrder::whereBetween('created_at', [$startDate, $endDate])->count()
-            : null;
+        $hasFullMetrics = $user->can('reports.view.financial') || $user->can('reports.view.sales') || $user->can('reports.view.inventory') || $user->hasAnyRole(['admin', 'shop_manager']);
+        $technicianId   = $user->technician?->id;
 
-        $totalCompletedJobs = $totalJobs !== null
-            ? JobOrder::whereBetween('created_at', [$startDate, $endDate])
+        // 1. Repair Metrics (own or all)
+        if ($hasFullMetrics) {
+            $totalJobs = JobOrder::whereBetween('created_at', [$startDate, $endDate])->count();
+            $totalCompletedJobs = JobOrder::whereBetween('created_at', [$startDate, $endDate])
                 ->whereIn('status', ['Ready for Pickup', 'Completed', 'Released'])
-                ->count()
-            : null;
+                ->count();
+        } elseif ($user->can('reports.view.own')) {
+            $totalJobs = JobOrder::where('technician_id', $technicianId)
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->count();
+            $totalCompletedJobs = JobOrder::where('technician_id', $technicianId)
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->whereIn('status', ['Ready for Pickup', 'Completed', 'Released'])
+                ->count();
+        } else {
+            $totalJobs = null;
+            $totalCompletedJobs = null;
+        }
 
         // 2. Financial metrics
         $totalRevenue = $laborRevenue = $partsRevenue = $totalPartsProfit = $outstandingBalance = null;
@@ -69,14 +80,24 @@ class ReportController extends Controller
         }
 
         // 3. Technician Performance Metrics
-        $techPerformance = ($user->can('reports.view.own') || $user->can('reports.view.financial'))
-            ? Technician::withCount([
+        if ($hasFullMetrics) {
+            $techPerformance = Technician::withCount([
                 'jobOrders as period_completed_count' => function ($q) use ($startDate, $endDate) {
                     $q->whereBetween('created_at', [$startDate, $endDate])
                         ->whereIn('status', ['Ready for Pickup', 'Completed', 'Released']);
                 },
-            ])->get()
-            : collect();
+            ])->get();
+        } elseif ($user->can('reports.view.own') && $technicianId) {
+            $techPerformance = Technician::where('id', $technicianId)
+                ->withCount([
+                    'jobOrders as period_completed_count' => function ($q) use ($startDate, $endDate) {
+                        $q->whereBetween('created_at', [$startDate, $endDate])
+                            ->whereIn('status', ['Ready for Pickup', 'Completed', 'Released']);
+                    },
+                ])->get();
+        } else {
+            $techPerformance = collect();
+        }
 
         // 4. Best Selling Parts (inventory permission)
         $bestSellingParts = $user->can('reports.view.inventory')

@@ -89,6 +89,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Technicians
     Route::get('/technicians-availability', [TechnicianController::class, 'availability'])->name('technicians.availability');
+    Route::get('/technicians-assignments', [TechnicianController::class, 'assignments'])->name('technicians.assignments');
     Route::resource('technicians', TechnicianController::class);
 
     // Invoices

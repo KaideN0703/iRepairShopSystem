@@ -13,12 +13,18 @@ class WarrantyController extends Controller
 {
     public function index(Request $request)
     {
-        $this->authorize('warranty.view');
+        $user = Auth::user();
+        abort_unless($user->can('warranty.view') || $user->can('warranty.view.scoped'), 403);
 
         $status = $request->query('status');
         $search = $request->query('search');
 
         $warranties = Warranty::with(['jobOrder', 'customer', 'device', 'claims'])
+            ->when(!$user->can('warranty.view'), function ($q) use ($user) {
+                $q->whereHas('jobOrder', function ($jq) use ($user) {
+                    $jq->where('technician_id', $user->technician?->id);
+                });
+            })
             ->when($status, function ($q, $status) {
                 $q->where('status', $status);
             })
@@ -39,7 +45,7 @@ class WarrantyController extends Controller
 
     public function show(Warranty $warranty)
     {
-        $this->authorize('warranty.view');
+        $this->authorize('warranty.view.scoped', $warranty);
         $warranty->load(['jobOrder.parts.part', 'customer', 'device', 'claims']);
         return view('warranties.show', compact('warranty'));
     }
