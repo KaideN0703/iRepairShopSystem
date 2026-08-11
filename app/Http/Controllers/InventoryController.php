@@ -15,6 +15,8 @@ class InventoryController extends Controller
 {
     public function index(Request $request)
     {
+        $this->authorize('parts.usage.view');
+
         $search = $request->query('search');
         $categoryId = $request->query('category_id');
         $supplierId = $request->query('supplier_id');
@@ -52,6 +54,8 @@ class InventoryController extends Controller
 
     public function create()
     {
+        $this->authorize('parts.catalog.manage');
+
         $categories = PartCategory::orderBy('name')->get();
         $suppliers = Supplier::orderBy('name')->get();
         return view('inventory.create', compact('categories', 'suppliers'));
@@ -59,6 +63,8 @@ class InventoryController extends Controller
 
     public function store(Request $request)
     {
+        $this->authorize('parts.catalog.manage');
+
         $validated = $request->validate([
             'category_id' => 'required|exists:part_categories,id',
             'supplier_id' => 'nullable|exists:suppliers,id',
@@ -104,12 +110,15 @@ class InventoryController extends Controller
 
     public function show(Part $part)
     {
+        $this->authorize('parts.usage.view');
         $part->load(['category', 'supplier', 'stockMovements.user', 'jobOrderParts.jobOrder.customer', 'jobOrderParts.jobOrder.device']);
         return view('inventory.show', compact('part'));
     }
 
     public function edit(Part $part)
     {
+        $this->authorize('parts.catalog.manage');
+
         $categories = PartCategory::orderBy('name')->get();
         $suppliers = Supplier::orderBy('name')->get();
         return view('inventory.edit', compact('part', 'categories', 'suppliers'));
@@ -117,6 +126,8 @@ class InventoryController extends Controller
 
     public function update(Request $request, Part $part)
     {
+        $this->authorize('parts.catalog.manage');
+
         $validated = $request->validate([
             'category_id' => 'required|exists:part_categories,id',
             'supplier_id' => 'nullable|exists:suppliers,id',
@@ -138,6 +149,8 @@ class InventoryController extends Controller
 
     public function adjustStock(Request $request, Part $part)
     {
+        $this->authorize('parts.catalog.manage');
+
         $request->validate([
             'type' => 'required|in:in,out,adjustment',
             'quantity' => 'required|integer|min:1',
@@ -189,6 +202,8 @@ class InventoryController extends Controller
 
     public function destroy(Part $part)
     {
+        $this->authorize('parts.catalog.manage');
+
         $name = $part->name;
         $part->delete();
 

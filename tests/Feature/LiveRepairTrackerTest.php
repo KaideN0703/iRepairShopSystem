@@ -17,8 +17,10 @@ class LiveRepairTrackerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->withoutMiddleware();
         $this->artisan('migrate:fresh');
         $this->artisan('db:seed');
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
     }
 
     public function test_post_progress_update_updates_denormalized_percentage_and_status()

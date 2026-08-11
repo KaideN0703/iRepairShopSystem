@@ -72,8 +72,8 @@ class PhotoCommentController extends Controller
             'photo_id' => $photo->id,
             'parent_id' => $request->parent_id,
             'user_id' => Auth::check() ? Auth::id() : null,
-            'author_name' => Auth::check() ? Auth::user()->name . ' (' . ucfirst(Auth::user()->role ?? 'Staff') . ')' : $authorName,
-            'author_type' => Auth::check() ? (Auth::user()->role === 'technician' ? 'technician' : 'staff') : 'customer',
+            'author_name' => Auth::check() ? Auth::user()->name . ' (' . ucfirst(Auth::user()->roles->first()?->name ?? 'Staff') . ')' : $authorName,
+            'author_type' => Auth::check() ? (Auth::user()->hasRole('technician') ? 'technician' : 'staff') : 'customer',
             'comment' => trim($request->comment),
         ]);
 
@@ -95,6 +95,14 @@ class PhotoCommentController extends Controller
      */
     public function storeStaffComment(Request $request, JobOrder $jobOrder)
     {
+        abort_unless(Auth::user()->canAny(['repairs.manage', 'jobs.manage.full']), 403);
+        $this->authorize('manage', $jobOrder); // RepairJobPolicy — technician job scope
+
+        if (!$jobOrder->exists) {
+            $routeParam = $request->route('job_order');
+            $jobOrder = $routeParam instanceof JobOrder ? $routeParam : JobOrder::findOrFail($routeParam);
+        }
+
         $request->validate([
             'photo_type' => 'required|string|in:progress_photo,attachment',
             'photo_id' => 'required|integer',
@@ -109,8 +117,8 @@ class PhotoCommentController extends Controller
         $photo = $modelClass::findOrFail($request->photo_id);
         $user = Auth::user();
 
-        $authorType = $user->role === 'technician' ? 'technician' : 'staff';
-        $authorName = $user->name . ' (' . ucfirst($user->role ?? 'Staff') . ')';
+        $authorType = $user->hasRole('technician') ? 'technician' : 'staff';
+        $authorName = $user->name . ' (' . ucfirst($user->roles->first()?->name ?? 'Staff') . ')';
 
         $comment = PhotoComment::create([
             'job_order_id' => $jobOrder->id,

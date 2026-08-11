@@ -274,6 +274,14 @@
                             </div>
                             <i class="fa-solid fa-boxes-stacked text-ir-gold text-sm shrink-0"></i>
                         </button>
+
+                        <button type="button" onclick="fillCreds('cashier@irepair.com')" class="role-chip-btn flex items-center justify-between col-span-2 sm:col-span-1">
+                            <div class="min-w-0 pr-2">
+                                <div class="text-xs font-bold text-ir-bone">Cashier</div>
+                                <div class="text-[10px] font-mono text-ir-bone/50 truncate">cashier@irepair.com</div>
+                            </div>
+                            <i class="fa-solid fa-cash-register text-ir-gold text-sm shrink-0"></i>
+                        </button>
                     </div>
                 </div>
 

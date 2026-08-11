@@ -55,12 +55,7 @@
                                 {{ $w->end_date ? $w->end_date->format('M d, Y') : 'N/A' }}
                             </td>
                             <td class="px-6 py-4 text-center">
-                                <span class="px-3 py-1 rounded-full text-xs font-bold border uppercase
-                                    @if($w->status === 'active') bg-emerald-500/10 text-emerald-400 border-emerald-500/30
-                                    @elseif($w->status === 'claimed') bg-amber-500/10 text-amber-400 border-amber-500/30
-                                    @else bg-ir-carbon text-ir-bone/70 border-ir-copper @endif">
-                                    {{ $w->status }}
-                                </span>
+                                <x-status-badge :stage="$w->status" />
                             </td>
                             <td class="px-6 py-4 text-center">
                                 <span class="px-2.5 py-1 rounded-full bg-ir-carbon text-xs font-bold text-ir-bone border border-ir-copper">

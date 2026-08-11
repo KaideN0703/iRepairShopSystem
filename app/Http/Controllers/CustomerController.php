@@ -12,6 +12,8 @@ class CustomerController extends Controller
 {
     public function index(Request $request)
     {
+        $this->authorize('customers.view');
+
         $search = $request->query('search');
 
         $customers = Customer::withCount(['devices', 'jobOrders', 'warranties'])
@@ -29,11 +31,14 @@ class CustomerController extends Controller
 
     public function create()
     {
+        $this->authorize('customers.manage');
         return view('customers.create');
     }
 
     public function store(Request $request)
     {
+        $this->authorize('customers.manage');
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'nullable|email|max:255',
@@ -63,6 +68,8 @@ class CustomerController extends Controller
 
     public function show(Customer $customer)
     {
+        $this->authorize('customers.view');
+
         $customer->load([
             'devices.jobOrders',
             'jobOrders.device',
@@ -77,11 +84,14 @@ class CustomerController extends Controller
 
     public function edit(Customer $customer)
     {
+        $this->authorize('customers.manage');
         return view('customers.edit', compact('customer'));
     }
 
     public function update(Request $request, Customer $customer)
     {
+        $this->authorize('customers.manage');
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'nullable|email|max:255',
@@ -107,6 +117,8 @@ class CustomerController extends Controller
 
     public function destroy(Request $request, Customer $customer)
     {
+        $this->authorize('customers.manage');
+
         $code = $customer->customer_code;
         $name = $customer->name;
         $customer->delete();

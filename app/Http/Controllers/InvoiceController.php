@@ -15,6 +15,8 @@ class InvoiceController extends Controller
 {
     public function index(Request $request)
     {
+        $this->authorize('invoices.manage');
+
         $status = $request->query('status');
         $search = $request->query('search');
 
@@ -39,6 +41,8 @@ class InvoiceController extends Controller
 
     public function generateFromJob(JobOrder $jobOrder)
     {
+        $this->authorize('invoices.manage');
+
         if ($jobOrder->invoice) {
             return redirect()->route('invoices.show', $jobOrder->invoice)->with('info', 'Invoice already exists for this job order.');
         }
@@ -133,12 +137,15 @@ class InvoiceController extends Controller
 
     public function show(Invoice $invoice)
     {
+        $this->authorize('invoices.manage');
         $invoice->load(['jobOrder.device', 'customer', 'items', 'payments.user']);
         return view('invoices.show', compact('invoice'));
     }
 
     public function recordPayment(Request $request, Invoice $invoice)
     {
+        $this->authorize('invoices.manage');
+
         $request->validate([
             'amount' => 'required|numeric|min:0.01',
             'payment_method' => 'required|string|in:Cash,Credit Card,GCash,Bank Transfer',
@@ -178,12 +185,14 @@ class InvoiceController extends Controller
 
     public function printReceipt(Invoice $invoice)
     {
+        $this->authorize('invoices.manage');
         $invoice->load(['jobOrder.device', 'customer', 'items', 'payments.user']);
         return view('invoices.receipt', compact('invoice'));
     }
 
     public function downloadPdf(Invoice $invoice)
     {
+        $this->authorize('invoices.manage');
         $invoice->load(['jobOrder.device', 'customer', 'items', 'payments.user']);
         $pdf = Pdf::loadView('invoices.pdf', compact('invoice'));
         return $pdf->download("Official_Receipt_{$invoice->invoice_number}.pdf");

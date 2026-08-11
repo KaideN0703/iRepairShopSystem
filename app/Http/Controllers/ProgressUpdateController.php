@@ -11,6 +11,14 @@ class ProgressUpdateController extends Controller
 {
     public function store(Request $request, JobOrder $jobOrder, ProgressTrackerService $trackerService)
     {
+        if (!$jobOrder->exists) {
+            $routeParam = $request->route('job_order');
+            $jobOrder = $routeParam instanceof JobOrder ? $routeParam : JobOrder::findOrFail($routeParam);
+        }
+
+        abort_unless(auth()->user()->canAny(['repairs.manage', 'jobs.manage.full']), 403);
+        $this->authorize('manage', $jobOrder); // RepairJobPolicy — technician job scope
+
         $request->validate([
             'pipeline_stage' => 'required|string|in:' . implode(',', JobOrder::STAGES),
             'percentage' => 'required|integer|min:0|max:100',
@@ -30,7 +38,7 @@ class ProgressUpdateController extends Controller
         $stage = $request->pipeline_stage;
         $percentage = (int) $request->percentage;
         $description = $request->description;
-        $isCustomerVisible = $request->boolean('is_customer_visible', true);
+        $isCustomerVisible = $request->boolean('is_customer_visible', false);
         $reworkReason = $request->rework_reason;
         $photos = $request->file('photos', []);
 

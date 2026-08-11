@@ -24,12 +24,23 @@ class JobOrderController extends Controller
 {
     public function index(Request $request)
     {
-        $status = $request->query('status');
+        $this->authorize('viewAny', JobOrder::class);
+        abort_unless(
+            auth()->user()->canAny(['repairs.view.own', 'repairs.view.status', 'repairs.manage', 'jobs.manage.full']),
+            403
+        );
+
+        $user   = auth()->user();
+        $status   = $request->query('status');
         $priority = $request->query('priority');
-        $techId = $request->query('technician_id');
-        $search = $request->query('search');
+        $techId   = $request->query('technician_id');
+        $search   = $request->query('search');
 
         $jobOrders = JobOrder::with(['customer', 'device', 'technician'])
+            // Technicians only see their own jobs
+            ->when($user->can('repairs.view.own') && !$user->can('repairs.manage') && !$user->can('jobs.manage.full'), function ($q) use ($user) {
+                $q->where('technician_id', $user->technician?->id);
+            })
             ->when($status, function ($q, $status) {
                 $q->where('status', $status);
             })
@@ -60,6 +71,8 @@ class JobOrderController extends Controller
 
     public function create(Request $request)
     {
+        $this->authorize('jobs.create');
+
         $customerId = $request->query('customer_id');
         $customers = Customer::with('devices')->orderBy('name')->get();
         $technicians = Technician::where('is_active', true)->get();
@@ -70,6 +83,8 @@ class JobOrderController extends Controller
 
     public function store(Request $request)
     {
+        $this->authorize('jobs.create');
+
         $validated = $request->validate([
             'customer_id' => 'required|exists:customers,id',
             'device_id' => 'required|exists:devices,id',
@@ -171,6 +186,8 @@ class JobOrderController extends Controller
 
     public function updateStatus(Request $request, JobOrder $jobOrder)
     {
+        $this->authorize('manage', $jobOrder); // RepairJobPolicy: technician scoped, admin/manager free
+
         $request->validate([
             'status' => 'required|string|in:' . implode(',', JobOrder::STAGES),
             'remarks' => 'nullable|string',
@@ -249,6 +266,9 @@ class JobOrderController extends Controller
 
     public function addPart(Request $request, JobOrder $jobOrder)
     {
+        $this->authorize('manage', $jobOrder); // RepairJobPolicy + requires parts.usage.create
+        $this->authorize('parts.usage.create');
+
         $request->validate([
             'part_id' => 'required|exists:parts,id',
             'quantity' => 'required|integer|min:1',
@@ -302,6 +322,9 @@ class JobOrderController extends Controller
 
     public function removePart(Request $request, JobOrder $jobOrder, JobOrderPart $jobOrderPart)
     {
+        $this->authorize('manage', $jobOrder);
+        $this->authorize('parts.usage.create');
+
         $part = Part::find($jobOrderPart->part_id);
         if ($part) {
             // Restore inventory stock
@@ -327,6 +350,8 @@ class JobOrderController extends Controller
 
     public function updateCosts(Request $request, JobOrder $jobOrder)
     {
+        $this->authorize('estimation.manage.full');
+
         $request->validate([
             'labor_cost' => 'required|numeric|min:0',
             'service_fee' => 'required|numeric|min:0',
@@ -345,6 +370,8 @@ class JobOrderController extends Controller
 
     public function assignTechnician(Request $request, JobOrder $jobOrder)
     {
+        $this->authorize('repairs.assign');
+
         $request->validate([
             'technician_id' => 'nullable|exists:technicians,id',
         ]);
@@ -382,6 +409,13 @@ class JobOrderController extends Controller
 
     public function uploadPhoto(Request $request, JobOrder $jobOrder)
     {
+        $this->authorize('manage', $jobOrder);
+
+        if (!$jobOrder->exists) {
+            $routeParam = $request->route('job_order');
+            $jobOrder = $routeParam instanceof JobOrder ? $routeParam : JobOrder::findOrFail($routeParam);
+        }
+
         $request->validate([
             'type' => 'required|in:photo_before,photo_after',
             'photo' => 'required|image|max:10240', // 10MB
@@ -409,9 +443,45 @@ class JobOrderController extends Controller
 
     public function saveSignature(Request $request, JobOrder $jobOrder)
     {
-        $request->validate([
-            'signature_data' => 'required|string',
-        ]);
+        $this->authorize('manage', $jobOrder);
+
+        if (!$jobOrder->exists) {
+            $routeParam = $request->route('job_order');
+            $jobOrder = $routeParam instanceof JobOrder ? $routeParam : JobOrder::findOrFail($routeParam);
+        }
+
+        $signatureType = $request->input('signature_type', 'drawn');
+
+        if ($signatureType === 'typed') {
+            $request->validate([
+                'typed_signature' => 'required|string|min:2|max:100',
+            ]);
+
+            $typedName = $request->typed_signature;
+            $filename  = 'sig_typed_' . $jobOrder->ticket_number . '_' . time() . '.txt';
+            Storage::disk('public')->put('signatures/' . $filename, $typedName);
+
+            Attachment::create([
+                'attachable_type' => JobOrder::class,
+                'attachable_id'   => $jobOrder->id,
+                'type'            => 'customer_signature',
+                'file_path'       => '/storage/signatures/' . $filename,
+                'file_name'       => $filename,
+                'file_size'       => strlen($typedName),
+                'metadata'        => json_encode(['signature_type' => 'typed', 'typed_name' => $typedName]),
+            ]);
+
+            if ($jobOrder->status !== 'Released') {
+                $jobOrder->status = 'Released';
+                $jobOrder->released_at = now();
+                $jobOrder->save();
+            }
+
+            return back()->with('success', "Typed signature from \"{$typedName}\" saved. Device released!");
+        }
+
+        // Drawn canvas signature
+        $request->validate(['signature_data' => 'required|string']);
 
         $data = $request->signature_data;
         if (preg_match('/^data:image\/(\w+);base64,/', $data, $type)) {
@@ -424,14 +494,14 @@ class JobOrderController extends Controller
 
             Attachment::create([
                 'attachable_type' => JobOrder::class,
-                'attachable_id' => $jobOrder->id,
-                'type' => 'customer_signature',
-                'file_path' => '/storage/signatures/' . $filename,
-                'file_name' => $filename,
-                'file_size' => strlen($data),
+                'attachable_id'   => $jobOrder->id,
+                'type'            => 'customer_signature',
+                'file_path'       => '/storage/signatures/' . $filename,
+                'file_name'       => $filename,
+                'file_size'       => strlen($data),
+                'metadata'        => json_encode(['signature_type' => 'drawn']),
             ]);
 
-            // If job not released, release it
             if ($jobOrder->status !== 'Released') {
                 $jobOrder->status = 'Released';
                 $jobOrder->released_at = now();
@@ -442,5 +512,63 @@ class JobOrderController extends Controller
         }
 
         return back()->with('error', 'Invalid signature image payload.');
+    }
+
+    public function resolveDeclinedApproval(Request $request, JobOrder $jobOrder, \App\Models\RepairApprovalRequest $approvalRequest)
+    {
+        $this->authorize('manage', $jobOrder);
+
+        $request->validate([
+            'resolution' => 'required|in:proceed_original,return_device,escalate_manager',
+            'staff_note'  => 'nullable|string|max:500',
+        ]);
+
+        $resolution = $request->resolution;
+        $staffNote  = $request->staff_note ?? '';
+
+        // Mark the approval request as resolved
+        $approvalRequest->update([
+            'status'       => 'resolved',
+            'response_note'=> "Staff resolution [{$resolution}]: {$staffNote}",
+            'responded_at' => now(),
+        ]);
+
+        // Apply the chosen resolution
+        switch ($resolution) {
+            case 'proceed_original':
+                // Continue repair with original scope — no status change, just log
+                $note = 'Staff chose to proceed with original repair scope after customer declined extra work.';
+                break;
+
+            case 'return_device':
+                $note = "Staff decision: return device as-is. Reason: {$staffNote}";
+                // Set status to Ready for Pickup
+                $jobOrder->status = 'Ready for Pickup';
+                $jobOrder->save();
+                \App\Models\JobOrderStatusHistory::create([
+                    'job_order_id' => $jobOrder->id,
+                    'user_id'      => \Auth::id(),
+                    'status_from'  => $jobOrder->status,
+                    'status_to'    => 'Ready for Pickup',
+                    'remarks'      => $note,
+                ]);
+                break;
+
+            case 'escalate_manager':
+                $note = "Escalated to manager: declined approval on ticket #{$jobOrder->ticket_number}. {$staffNote}";
+                break;
+        }
+
+        AuditLog::create([
+            'user_id'     => \Auth::id(),
+            'user_name'   => \Auth::user()?->name,
+            'action'      => 'resolve_declined_approval',
+            'module'      => 'JobOrders',
+            'description' => "Resolved declined approval #{$approvalRequest->id} on ticket #{$jobOrder->ticket_number}: [{$resolution}] {$staffNote}",
+            'ip_address'  => $request->ip(),
+            'user_agent'  => $request->userAgent(),
+        ]);
+
+        return back()->with('success', "Declined approval resolved: {$resolution} action taken.");
     }
 }

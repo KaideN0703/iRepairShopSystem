@@ -74,9 +74,8 @@
              SIDEBAR NAVIGATION
              ============================================================ --}}
         <aside
-            class="fixed inset-y-0 left-0 z-40 w-64 bg-ir-carbon border-r border-ir-copper transform transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:inset-0 flex flex-col justify-between"
+            class="fixed inset-y-0 left-0 z-40 w-64 bg-ir-carbon border-r border-ir-copper transform transition-transform duration-300 ease-in-out -translate-x-full md:translate-x-0 md:static md:inset-0 flex flex-col justify-between"
             :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-            x-cloak
         >
             {{-- Sidebar Header (64px height to align perfectly with topbar) --}}
             <div>
@@ -98,78 +97,131 @@
                 </div>
 
                 {{-- Navigation Links --}}
-                <nav class="p-3 space-y-1 overflow-y-auto max-h-[calc(100vh-130px)]">
+                <nav class="p-3 overflow-y-auto max-h-[calc(100vh-130px)]" aria-label="Main Navigation">
+
+                    {{-- Section: Core Operations --}}
+                    <div class="pt-1 pb-1 px-1 mb-1">
+                        <span class="nav-section-label">Repair Workflow</span>
+                    </div>
 
                     <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                         <i class="fa-solid fa-chart-pie"></i>
                         <span>Dashboard</span>
                     </a>
 
+                    {{-- Repair Tickets: visible to anyone who can view or create jobs --}}
+                    @canany(['repairs.view.own', 'repairs.view.status', 'repairs.manage', 'jobs.create', 'jobs.manage.full'])
                     <a href="{{ route('job_orders.index') }}" class="nav-item {{ request()->routeIs('job_orders.*') ? 'active' : '' }}">
                         <i class="fa-solid fa-screwdriver-wrench"></i>
                         <span>Repair Tickets</span>
                     </a>
+                    @endcanany
 
+                    {{-- Customers: visible to those who can view or manage customers --}}
+                    @canany(['customers.view', 'customers.manage'])
                     <a href="{{ route('customers.index') }}" class="nav-item {{ request()->routeIs('customers.*') ? 'active' : '' }}">
                         <i class="fa-solid fa-users"></i>
                         <span>Customers</span>
                     </a>
+                    @endcanany
 
+                    {{-- Devices: visible to those who can view customers or create jobs --}}
+                    @canany(['customers.view', 'jobs.create'])
                     <a href="{{ route('devices.index') }}" class="nav-item {{ request()->routeIs('devices.*') ? 'active' : '' }}">
                         <i class="fa-solid fa-mobile-screen-button"></i>
                         <span>Devices</span>
                     </a>
+                    @endcanany
 
-                    <a href="{{ route('inventory.index') }}" class="nav-item {{ request()->routeIs('inventory.*') ? 'active' : '' }}">
-                        <i class="fa-solid fa-boxes-stacked"></i>
-                        <span>Inventory &amp; Parts</span>
-                    </a>
-
-                    <a href="{{ route('suppliers.index') }}" class="nav-item {{ request()->routeIs('suppliers.*') ? 'active' : '' }}">
-                        <i class="fa-solid fa-truck-field"></i>
-                        <span>Suppliers &amp; Restock</span>
-                    </a>
-
+                    {{-- Technicians: only managers who can manage technicians --}}
+                    @can('technicians.manage')
                     <a href="{{ route('technicians.index') }}" class="nav-item {{ request()->routeIs('technicians.*') ? 'active' : '' }}">
                         <i class="fa-solid fa-user-gear"></i>
                         <span>Technicians</span>
                     </a>
+                    @endcan
 
+                    {{-- Section: Inventory & Supply --}}
+                    @canany(['parts.usage.view', 'parts.catalog.manage', 'suppliers.view', 'suppliers.manage'])
+                    <div class="pt-4 pb-1 px-1 mb-1">
+                        <span class="nav-section-label">Inventory &amp; Supply</span>
+                    </div>
+                    @endcanany
+
+                    @canany(['parts.usage.view', 'parts.catalog.manage'])
+                    <a href="{{ route('inventory.index') }}" class="nav-item {{ request()->routeIs('inventory.*') ? 'active' : '' }}">
+                        <i class="fa-solid fa-boxes-stacked"></i>
+                        <span>Inventory &amp; Parts</span>
+                    </a>
+                    @endcanany
+
+                    @canany(['suppliers.view', 'suppliers.manage'])
+                    <a href="{{ route('suppliers.index') }}" class="nav-item {{ request()->routeIs('suppliers.*') ? 'active' : '' }}">
+                        <i class="fa-solid fa-truck-field"></i>
+                        <span>Suppliers &amp; Restock</span>
+                    </a>
+                    @endcanany
+
+                    {{-- Section: Billing & Compliance --}}
+                    @canany(['invoices.manage', 'warranty.view', 'warranty.claim', 'warranty.manage'])
+                    <div class="pt-4 pb-1 px-1 mb-1">
+                        <span class="nav-section-label">Billing &amp; Compliance</span>
+                    </div>
+                    @endcanany
+
+                    @can('invoices.manage')
                     <a href="{{ route('invoices.index') }}" class="nav-item {{ request()->routeIs('invoices.*') ? 'active' : '' }}">
                         <i class="fa-solid fa-file-invoice-dollar"></i>
                         <span>Invoices &amp; Billing</span>
                     </a>
+                    @endcan
 
+                    @canany(['warranty.view', 'warranty.claim', 'warranty.manage'])
                     <a href="{{ route('warranties.index') }}" class="nav-item {{ request()->routeIs('warranties.*') ? 'active' : '' }}">
                         <i class="fa-solid fa-shield-halved"></i>
                         <span>Warranties</span>
                     </a>
+                    @endcanany
+
+                    {{-- Section: Analytics --}}
+                    @canany(['reports.view.own', 'reports.view.financial', 'reports.view.inventory', 'reports.view.sales'])
+                    <div class="pt-4 pb-1 px-1 mb-1">
+                        <span class="nav-section-label">Analytics</span>
+                    </div>
 
                     <a href="{{ route('reports.index') }}" class="nav-item {{ request()->routeIs('reports.*') ? 'active' : '' }}">
                         <i class="fa-solid fa-chart-line"></i>
                         <span>Reports &amp; Analytics</span>
                     </a>
+                    @endcanany
 
-                    @hasrole('Administrator')
-                    <div class="pt-3 pb-1 px-1">
+                    {{-- Section: System Admin — users.manage or audit.view or backup.manage --}}
+                    @canany(['users.manage.full', 'users.manage.limited', 'audit.view', 'backup.manage'])
+                    <div class="pt-4 pb-1 px-1 mb-1 border-t border-ir-copper/40 mt-3">
                         <span class="nav-section-label">System Admin</span>
                     </div>
+                    @endcanany
 
+                    @canany(['users.manage.full', 'users.manage.limited'])
                     <a href="{{ route('users.index') }}" class="nav-item {{ request()->routeIs('users.*') ? 'active' : '' }}">
                         <i class="fa-solid fa-user-shield"></i>
                         <span>Staff &amp; Roles</span>
                     </a>
+                    @endcanany
 
+                    @can('audit.view')
                     <a href="{{ route('audit_logs.index') }}" class="nav-item {{ request()->routeIs('audit_logs.*') ? 'active' : '' }}">
                         <i class="fa-solid fa-list-check"></i>
                         <span>Audit Logs</span>
                     </a>
+                    @endcan
 
+                    @can('backup.manage')
                     <a href="{{ route('backups.index') }}" class="nav-item {{ request()->routeIs('backups.*') ? 'active' : '' }}">
                         <i class="fa-solid fa-database"></i>
                         <span>Backup &amp; Restore</span>
                     </a>
-                    @endhasrole
+                    @endcan
 
                 </nav>
             </div>

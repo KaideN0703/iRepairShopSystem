@@ -9,12 +9,7 @@
         <div>
             <div class="flex items-center gap-3">
                 <h2 class="text-2xl font-bold text-ir-bone">Invoice #{{ $invoice->invoice_number }}</h2>
-                <span class="px-3 py-1 rounded-full text-xs font-bold border uppercase
-                    @if($invoice->payment_status === 'paid') bg-emerald-500/10 text-emerald-400 border-emerald-500/30
-                    @elseif($invoice->payment_status === 'partial') bg-amber-500/10 text-amber-400 border-amber-500/30
-                    @else bg-red-500/10 text-red-400 border-red-500/30 @endif">
-                    {{ $invoice->payment_status }}
-                </span>
+                <x-status-badge :stage="$invoice->payment_status" />
             </div>
             <p class="text-xs text-ir-bone/70 mt-1">
                 Issued to: <strong>{{ $invoice->customer?->name }}</strong> | Ticket: <a href="{{ route('job_orders.show', $invoice->job_order_id) }}" class="text-ir-gold underline">#{{ $invoice->jobOrder?->ticket_number }}</a>
@@ -62,8 +57,8 @@
                                 <td class="px-4 py-3 capitalize font-semibold text-ir-gold">{{ str_replace('_', ' ', $item->item_type) }}</td>
                                 <td class="px-4 py-3 font-medium text-ir-bone">{{ $item->description }}</td>
                                 <td class="px-4 py-3 text-center font-bold">{{ $item->quantity }}</td>
-                                <td class="px-4 py-3 text-right">₱{{ number_format($item->unit_price, 2) }}</td>
-                                <td class="px-4 py-3 text-right font-bold text-ir-bone">₱{{ number_format($item->total_price, 2) }}</td>
+                                <td class="px-4 py-3 text-right"><x-currency :amount="$item->unit_price" /></td>
+                                <td class="px-4 py-3 text-right font-bold text-ir-bone"><x-currency :amount="$item->total_price" /></td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -74,25 +69,25 @@
                 <div class="w-64 space-y-2 text-xs">
                     <div class="flex justify-between text-ir-bone/70">
                         <span>Subtotal:</span>
-                        <span class="font-bold text-ir-bone">₱{{ number_format($invoice->subtotal, 2) }}</span>
+                        <span class="font-bold text-ir-bone"><x-currency :amount="$invoice->subtotal" /></span>
                     </div>
                     @if($invoice->discount_amount > 0)
                         <div class="flex justify-between text-ir-bone/70">
                             <span>Discount Applied:</span>
-                            <span class="font-bold text-emerald-400">-₱{{ number_format($invoice->discount_amount, 2) }}</span>
+                            <span class="font-bold text-emerald-400">-<x-currency :amount="$invoice->discount_amount" /></span>
                         </div>
                     @endif
                     <div class="flex justify-between text-base font-bold text-ir-bone border-t border-ir-copper pt-2">
                         <span>Total Due:</span>
-                        <span class="text-ir-gold">₱{{ number_format($invoice->total_amount, 2) }}</span>
+                        <span class="text-ir-gold"><x-currency :amount="$invoice->total_amount" /></span>
                     </div>
                     <div class="flex justify-between text-xs font-semibold text-emerald-400">
                         <span>Paid Amount:</span>
-                        <span>₱{{ number_format($invoice->paid_amount, 2) }}</span>
+                        <span><x-currency :amount="$invoice->paid_amount" /></span>
                     </div>
                     <div class="flex justify-between text-xs font-bold text-red-400">
                         <span>Remaining Balance:</span>
-                        <span>₱{{ number_format(max(0, $invoice->total_amount - $invoice->paid_amount), 2) }}</span>
+                        <span><x-currency :amount="max(0, $invoice->total_amount - $invoice->paid_amount)" /></span>
                     </div>
                 </div>
             </div>
@@ -108,7 +103,7 @@
                 @forelse($invoice->payments as $pay)
                     <div class="p-3 rounded-md bg-ir-void border border-ir-copper space-y-1">
                         <div class="flex items-center justify-between text-xs">
-                            <strong class="text-emerald-400 font-mono">₱{{ number_format($pay->amount, 2) }}</strong>
+                            <strong class="text-emerald-400 font-mono"><x-currency :amount="$pay->amount" /></strong>
                             <span class="text-ir-bone/70">{{ $pay->payment_method }}</span>
                         </div>
                         <p class="text-[11px] text-ir-bone/70">Ref: {{ $pay->reference_number ?? 'N/A' }} | Date: {{ $pay->payment_date->format('M d, Y') }}</p>

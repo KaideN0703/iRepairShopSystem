@@ -30,56 +30,9 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Roles & Permissions
-        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+        // 1. Roles & Permissions — delegated to RolesAndPermissionsSeeder
+        $this->call(RolesAndPermissionsSeeder::class);
 
-        $permissions = [
-            'manage-users',
-            'manage-roles',
-            'view-dashboard',
-            'manage-customers',
-            'manage-devices',
-            'manage-job-orders',
-            'update-job-status',
-            'perform-diagnosis',
-            'manage-inventory',
-            'manage-suppliers',
-            'manage-invoices',
-            'process-payments',
-            'view-reports',
-            'manage-warranties',
-            'manage-backups',
-            'view-audit-logs',
-        ];
-
-        foreach ($permissions as $permission) {
-            Permission::findOrCreate($permission);
-        }
-
-        $adminRole = Role::findOrCreate('Administrator');
-        $adminRole->givePermissionTo(Permission::all());
-
-        $managerRole = Role::findOrCreate('Shop Manager');
-        $managerRole->givePermissionTo([
-            'view-dashboard', 'manage-customers', 'manage-devices', 'manage-job-orders',
-            'update-job-status', 'perform-diagnosis', 'manage-inventory', 'manage-suppliers',
-            'manage-invoices', 'process-payments', 'view-reports', 'manage-warranties', 'view-audit-logs'
-        ]);
-
-        $techRole = Role::findOrCreate('Technician');
-        $techRole->givePermissionTo([
-            'view-dashboard', 'manage-job-orders', 'update-job-status', 'perform-diagnosis'
-        ]);
-
-        $inventoryRole = Role::findOrCreate('Inventory Staff');
-        $inventoryRole->givePermissionTo([
-            'view-dashboard', 'manage-inventory', 'manage-suppliers'
-        ]);
-
-        $cashierRole = Role::findOrCreate('Cashier');
-        $cashierRole->givePermissionTo([
-            'view-dashboard', 'manage-invoices', 'process-payments'
-        ]);
 
         // 2. Users & Technicians
         $admin = User::create([
@@ -89,7 +42,7 @@ class DatabaseSeeder extends Seeder
             'phone' => '+1 (555) 019-2831',
             'is_active' => true,
         ]);
-        $admin->assignRole($adminRole);
+        $admin->assignRole('admin');
 
         $manager = User::create([
             'name' => 'Elena Rostova',
@@ -98,7 +51,7 @@ class DatabaseSeeder extends Seeder
             'phone' => '+1 (555) 012-9988',
             'is_active' => true,
         ]);
-        $manager->assignRole($managerRole);
+        $manager->assignRole('shop_manager');
 
         $techUser1 = User::create([
             'name' => 'Marcus Vance',
@@ -107,7 +60,7 @@ class DatabaseSeeder extends Seeder
             'phone' => '+1 (555) 014-4321',
             'is_active' => true,
         ]);
-        $techUser1->assignRole($techRole);
+        $techUser1->assignRole('technician');
 
         $techUser2 = User::create([
             'name' => 'Sarah Lin',
@@ -116,7 +69,7 @@ class DatabaseSeeder extends Seeder
             'phone' => '+1 (555) 017-8899',
             'is_active' => true,
         ]);
-        $techUser2->assignRole($techRole);
+        $techUser2->assignRole('technician');
 
         $inventoryUser = User::create([
             'name' => 'Alex Rivera',
@@ -125,7 +78,7 @@ class DatabaseSeeder extends Seeder
             'phone' => '+1 (555) 018-7711',
             'is_active' => true,
         ]);
-        $inventoryUser->assignRole($inventoryRole);
+        $inventoryUser->assignRole('inventory_staff');
 
         $cashierUser = User::create([
             'name' => 'Emily Davis',
@@ -134,7 +87,7 @@ class DatabaseSeeder extends Seeder
             'phone' => '+1 (555) 013-6622',
             'is_active' => true,
         ]);
-        $cashierUser->assignRole($cashierRole);
+        $cashierUser->assignRole('cashier');
 
         $tech1 = Technician::create([
             'user_id' => $techUser1->id,

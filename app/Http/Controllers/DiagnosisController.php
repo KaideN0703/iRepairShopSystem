@@ -14,6 +14,9 @@ class DiagnosisController extends Controller
 {
     public function create(JobOrder $jobOrder)
     {
+        $this->authorize('diagnosis.manage');
+        $this->authorize('manage', $jobOrder); // RepairJobPolicy — technician job scope
+
         $jobOrder->load(['device', 'customer', 'technician']);
         $diagnosis = $jobOrder->diagnosis;
 
@@ -22,6 +25,9 @@ class DiagnosisController extends Controller
 
     public function store(Request $request, JobOrder $jobOrder, AiDiagnosisService $aiService)
     {
+        $this->authorize('diagnosis.manage');
+        $this->authorize('manage', $jobOrder); // RepairJobPolicy — technician job scope
+
         $validated = $request->validate([
             'checklist' => 'nullable|array',
             'identified_issues' => 'required|string',
@@ -74,6 +80,8 @@ class DiagnosisController extends Controller
 
     public function getAiSuggestions(Request $request, JobOrder $jobOrder, AiDiagnosisService $aiService)
     {
+        $this->authorize('diagnosis.manage');
+
         $reportedIssue = $request->input('reported_issue', $jobOrder->reported_issue);
 
         $suggestions = $aiService->diagnose(

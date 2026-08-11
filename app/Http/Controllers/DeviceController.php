@@ -12,6 +12,8 @@ class DeviceController extends Controller
 {
     public function index(Request $request)
     {
+        $this->authorize('customers.view');
+
         $search = $request->query('search');
 
         $devices = Device::with('customer')
@@ -31,6 +33,8 @@ class DeviceController extends Controller
 
     public function create(Request $request)
     {
+        abort_unless(auth()->user()->canAny(['customers.manage', 'jobs.create']), 403);
+
         $customerId = $request->query('customer_id');
         $customers = Customer::orderBy('name')->get();
         return view('devices.create', compact('customers', 'customerId'));
@@ -38,6 +42,8 @@ class DeviceController extends Controller
 
     public function store(Request $request)
     {
+        abort_unless(auth()->user()->canAny(['customers.manage', 'jobs.create']), 403);
+
         $validated = $request->validate([
             'customer_id' => 'required|exists:customers,id',
             'device_type' => 'required|string|max:100',
@@ -66,18 +72,22 @@ class DeviceController extends Controller
 
     public function show(Device $device)
     {
+        $this->authorize('customers.view');
         $device->load(['customer', 'jobOrders.technician', 'warranties', 'attachments']);
         return view('devices.show', compact('device'));
     }
 
     public function edit(Device $device)
     {
+        $this->authorize('customers.manage');
         $customers = Customer::orderBy('name')->get();
         return view('devices.edit', compact('device', 'customers'));
     }
 
     public function update(Request $request, Device $device)
     {
+        $this->authorize('customers.manage');
+
         $validated = $request->validate([
             'customer_id' => 'required|exists:customers,id',
             'device_type' => 'required|string|max:100',
@@ -96,6 +106,8 @@ class DeviceController extends Controller
 
     public function destroy(Request $request, Device $device)
     {
+        $this->authorize('customers.manage');
+
         $customerId = $device->customer_id;
         $device->delete();
 

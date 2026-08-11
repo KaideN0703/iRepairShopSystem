@@ -5,24 +5,23 @@
 @section('content')
 <div class="max-w-4xl mx-auto space-y-6" x-data="customerLiveTracker()">
 
-    <!-- Ticket Header -->
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-ir-carbon border border-ir-copper p-6 rounded-md">
-        <div>
-            <div class="flex items-center gap-3">
-                <h1 class="text-2xl font-extrabold text-ir-bone">Live Repair Tracker</h1>
-                <span class="px-3 py-1 rounded-full text-xs font-mono font-bold bg-ir-amber-deep/10 text-ir-gold border border-ir-gold/30">
-                    #{{ $jobOrder->ticket_number }}
-                </span>
-            </div>
-            <p class="text-xs text-ir-bone/70 mt-1">
-                Owner: <strong>{{ $jobOrder->customer?->name }}</strong> | Device: <strong>{{ $jobOrder->device?->brand }} {{ $jobOrder->device?->model }}</strong>
-            </p>
+    <!-- Ticket Header — Mobile above-fold: ticket + device + ETA in single column -->
+    <div class="flex flex-col gap-3 bg-ir-carbon border border-ir-copper p-5 rounded-md">
+        <div class="flex items-center gap-3">
+            <h1 class="text-xl font-extrabold text-ir-bone">Live Repair Tracker</h1>
+            <span class="px-3 py-1 rounded-full text-xs font-mono font-bold bg-ir-amber-deep/10 text-ir-gold border border-ir-gold/30">
+                #{{ $jobOrder->ticket_number }}
+            </span>
         </div>
-
-        <div class="text-right sm:text-right">
-            <span class="block text-[11px] font-semibold text-ir-bone/70 uppercase tracking-wider">Est. Completion</span>
-            <strong class="text-sm text-ir-gold font-mono">{{ $jobOrder->estimated_completion_date ? $jobOrder->estimated_completion_date->format('M d, Y') : 'Pending Inspection' }}</strong>
-            <span class="block text-[10px] text-ir-copper font-semibold" x-text="'~' + remainingHours + ' hours remaining'"></span>
+        <p class="text-xs text-ir-bone/70">
+            Owner: <strong>{{ $jobOrder->customer?->name }}</strong> | Device: <strong>{{ $jobOrder->device?->brand }} {{ $jobOrder->device?->model }}</strong>
+        </p>
+        <!-- ETA above fold on mobile (Task 5) -->
+        <div class="flex items-center gap-2 text-xs">
+            <i class="fa-solid fa-clock text-ir-gold"></i>
+            <span class="text-ir-bone/70 font-semibold uppercase tracking-wider">Est. Completion:</span>
+            <strong class="text-ir-gold font-mono">{{ $jobOrder->estimated_completion_date ? $jobOrder->estimated_completion_date->format('M d, Y') : 'Pending Inspection' }}</strong>
+            <span class="text-ir-copper font-semibold" x-text="'~' + remainingHours + ' hours remaining'"></span>
         </div>
     </div>
 
@@ -55,7 +54,7 @@
                     @if($pReq->additional_cost > 0)
                         <div>
                             <span class="text-ir-bone/70">Additional Cost:</span>
-                            <strong class="text-emerald-400 font-bold text-sm ml-1">+₱{{ number_format($pReq->additional_cost, 2) }}</strong>
+                            <strong class="text-emerald-400 font-bold text-sm ml-1">+<x-currency :amount="$pReq->additional_cost" /></strong>
                         </div>
                     @endif
                     @if($pReq->additional_time_days > 0)
@@ -67,16 +66,18 @@
                 </div>
             </div>
 
-            <!-- Approve / Decline Buttons -->
-            <div class="pt-3 border-t border-amber-500/30 flex items-center justify-end gap-3">
-                <button type="button" @click="openDeclineModal = true" class="px-5 py-2.5 rounded-md bg-ir-carbon hover:bg-ir-carbon text-red-400 border border-red-500/30 font-semibold text-xs transition-colors">
-                    Decline Request
+            <!-- Approve / Decline Buttons — 44px tap targets, full width on mobile (Task 5) -->
+            <div class="pt-3 border-t border-amber-500/30 flex flex-col sm:flex-row items-stretch sm:items-center sm:justify-end gap-3">
+                <button type="button" @click="openDeclineModal = true"
+                        class="w-full sm:w-auto min-h-[44px] px-5 py-3 rounded-md bg-ir-carbon hover:bg-ir-carbon text-red-400 border border-red-500/30 font-semibold text-sm transition-colors flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-xmark"></i> Decline Request
                 </button>
 
-                <form action="{{ route('customer.approval.respond', [$jobOrder->tracking_token ?? $jobOrder->ticket_number, $pReq->id]) }}" method="POST">
+                <form action="{{ route('customer.approval.respond', [$jobOrder->tracking_token ?? $jobOrder->ticket_number, $pReq->id]) }}" method="POST" class="w-full sm:w-auto">
                     @csrf
                     <input type="hidden" name="action" value="approve">
-                    <button type="submit" class="px-6 py-2.5 rounded-md bg-emerald-600 hover:bg-emerald-500 text-ir-bone font-bold text-xs flex items-center gap-1.5 transition-colors">
+                    <button type="submit"
+                            class="w-full min-h-[44px] px-6 py-3 rounded-md bg-emerald-600 hover:bg-emerald-500 text-ir-bone font-bold text-sm flex items-center justify-center gap-2 transition-colors">
                         <i class="fa-solid fa-circle-check"></i> Approve Additional Repair
                     </button>
                 </form>
@@ -108,8 +109,11 @@
                     $isPassed = $index <= $currentStageIndex;
                     $isCurrent = $index === $currentStageIndex;
                 @endphp
-                <div class="p-2 rounded-md border {{ $isCurrent ? 'bg-ir-gold text-ir-bone font-bold border-ir-gold' : ($isPassed ? 'bg-ir-carbon text-ir-amber-deep border-ir-copper' : 'bg-ir-void text-ir-copper border-ir-copper') }}">
-                    <span class="block text-[9px] uppercase tracking-wider mb-0.5">Stage {{ $index + 1 }}</span>
+                <div class="relative p-2 rounded-md border {{ $isCurrent ? 'bg-ir-gold/20 text-ir-gold font-bold border-ir-gold' : ($isPassed ? 'bg-ir-carbon text-ir-amber-deep border-ir-copper' : 'bg-ir-void text-ir-copper border-ir-copper') }}">
+                    @if($isCurrent)
+                        <div class="absolute -top-1.5 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[4px] border-r-[4px] border-b-[5px] border-l-transparent border-r-transparent border-b-ir-gold"></div>
+                    @endif
+                    <span class="block text-[9px] uppercase tracking-wider mb-0.5 font-mono">Stage {{ $index + 1 }}</span>
                     <span class="block font-semibold truncate">{{ $stage }}</span>
                 </div>
             @endforeach

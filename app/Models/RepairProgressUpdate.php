@@ -26,6 +26,11 @@ class RepairProgressUpdate extends Model
         'percentage' => 'integer',
     ];
 
+    /** Task 4 — Notes default to internal-only (not customer-visible) */
+    protected $attributes = [
+        'is_customer_visible' => false,
+    ];
+
     public function jobOrder()
     {
         return $this->belongsTo(JobOrder::class);

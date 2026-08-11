@@ -14,6 +14,8 @@ class TechnicianController extends Controller
 {
     public function index()
     {
+        $this->authorize('technicians.manage');
+
         $technicians = Technician::with('user')
             ->withCount([
                 'jobOrders as total_jobs_count',
@@ -31,11 +33,14 @@ class TechnicianController extends Controller
 
     public function create()
     {
+        $this->authorize('technicians.manage');
         return view('technicians.create');
     }
 
     public function store(Request $request)
     {
+        $this->authorize('technicians.manage');
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
@@ -71,6 +76,12 @@ class TechnicianController extends Controller
 
     public function show(Technician $technician)
     {
+        // Technicians can view their own profile; managers can view all
+        abort_unless(
+            auth()->user()->can('technicians.manage') || auth()->user()->technician?->id === $technician->id,
+            403
+        );
+
         $technician->load([
             'user',
             'jobOrders.customer',
@@ -92,11 +103,14 @@ class TechnicianController extends Controller
 
     public function edit(Technician $technician)
     {
+        $this->authorize('technicians.manage');
         return view('technicians.edit', compact('technician'));
     }
 
     public function update(Request $request, Technician $technician)
     {
+        $this->authorize('technicians.manage');
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'phone' => 'nullable|string|max:50',
@@ -115,5 +129,31 @@ class TechnicianController extends Controller
         }
 
         return redirect()->route('technicians.show', $technician)->with('success', 'Technician profile updated!');
+    }
+
+    /**
+     * Lightweight availability endpoint for cashier assignment picker.
+     * Returns only { id, name, active_jobs_count } — no contact info or performance data.
+     * Gated by technicians.view.availability.
+     */
+    public function availability()
+    {
+        $this->authorize('technicians.view.availability');
+
+        $technicians = Technician::where('is_active', true)
+            ->withCount([
+                'jobOrders as open_job_count' => function ($q) {
+                    $q->whereIn('status', ['Received', 'Diagnosing', 'Waiting for Parts', 'Under Repair', 'Testing']);
+                },
+            ])
+            ->get(['id', 'name', 'specialty'])
+            ->map(fn ($t) => [
+                'id'             => $t->id,
+                'name'           => $t->name,
+                'specialty'      => $t->specialty,
+                'open_job_count' => $t->open_job_count,
+            ]);
+
+        return response()->json($technicians);
     }
 }

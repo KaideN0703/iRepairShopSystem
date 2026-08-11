@@ -63,7 +63,7 @@
             <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:0.5rem;">
                 <div>
                     <div class="ir-stat-label">Monthly Revenue</div>
-                    <div class="ir-stat-value" style="font-size:1.5rem;">₱{{ number_format($totalRevenueMonth, 2) }}</div>
+                    <div class="ir-stat-value" style="font-size:1.5rem;">₱{{ number_format($totalRevenueMonth ?? 0, 2) }}</div>
                     <div style="font-size:0.7rem; color:#B97A1A; margin-top:0.35rem; font-family:'Inter',sans-serif;">
                         <i class="fa-solid fa-handshake-angle" style="margin-right:3px;"></i>{{ $claimedCount }} Claimed / Released
                     </div>
@@ -145,7 +145,7 @@
                     white-space:nowrap;
                     flex-shrink:0;
                 ">
-                    Proj: ₱{{ number_format($incomeForecast['projected_next_month'], 0) }}
+                    Proj: ₱{{ number_format($incomeForecast['projected_next_month'] ?? 0, 0) }}
                 </span>
             </div>
             <div style="position:relative; height:220px; width:100%;">
@@ -255,8 +255,12 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const ctx = document.getElementById('incomeChart').getContext('2d');
+        const canvas = document.getElementById('incomeChart');
         const forecastData = @json($incomeForecast);
+        if (!canvas || !forecastData || !forecastData.historical || !forecastData.historical.length) {
+            return;
+        }
+        const ctx = canvas.getContext('2d');
 
         // Brand gold palette for the chart
         const goldBars   = 'rgba(245, 166, 35, 0.55)';

@@ -15,17 +15,21 @@ class SupplierController extends Controller
 {
     public function index()
     {
+        $this->authorize('suppliers.view');
         $suppliers = Supplier::withCount(['parts', 'purchaseOrders'])->latest()->get();
         return view('suppliers.index', compact('suppliers'));
     }
 
     public function create()
     {
+        $this->authorize('suppliers.manage');
         return view('suppliers.create');
     }
 
     public function store(Request $request)
     {
+        $this->authorize('suppliers.manage');
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'contact_person' => 'nullable|string|max:255',
@@ -41,17 +45,21 @@ class SupplierController extends Controller
 
     public function show(Supplier $supplier)
     {
+        $this->authorize('suppliers.view');
         $supplier->load(['parts', 'purchaseOrders.items.part']);
         return view('suppliers.show', compact('supplier'));
     }
 
     public function edit(Supplier $supplier)
     {
+        $this->authorize('suppliers.manage');
         return view('suppliers.edit', compact('supplier'));
     }
 
     public function update(Request $request, Supplier $supplier)
     {
+        $this->authorize('suppliers.manage');
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'contact_person' => 'nullable|string|max:255',
@@ -67,6 +75,8 @@ class SupplierController extends Controller
 
     public function createPurchaseOrder(Supplier $supplier)
     {
+        $this->authorize('suppliers.manage');
+
         $parts = Part::where('supplier_id', $supplier->id)->get();
         if ($parts->isEmpty()) {
             $parts = Part::all();
@@ -76,6 +86,8 @@ class SupplierController extends Controller
 
     public function storePurchaseOrder(Request $request, Supplier $supplier)
     {
+        $this->authorize('suppliers.manage');
+
         $request->validate([
             'expected_date' => 'nullable|date',
             'notes' => 'nullable|string',

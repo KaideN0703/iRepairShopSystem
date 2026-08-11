@@ -15,6 +15,11 @@ class CustomerApprovalController extends Controller
         RepairApprovalRequest $approvalRequest,
         ProgressTrackerService $trackerService
     ) {
+        if (!$approvalRequest->exists) {
+            $routeParam = $request->route('approval_request');
+            $approvalRequest = $routeParam instanceof RepairApprovalRequest ? $routeParam : RepairApprovalRequest::findOrFail($routeParam);
+        }
+
         $jobOrder = JobOrder::findByReference($token);
 
         if (!$jobOrder) {

@@ -16,6 +16,11 @@ class Attachment extends Model
         'file_path',
         'file_name',
         'file_size',
+        'metadata',
+    ];
+
+    protected $casts = [
+        'metadata' => 'array',
     ];
 
     public function attachable()

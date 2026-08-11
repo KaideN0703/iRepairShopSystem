@@ -23,4 +23,18 @@ class AuditLog extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    /**
+     * Task 9 — Check if an audit log action can be safely reverted.
+     * Excludes financial/payment/invoice entries.
+     */
+    public function isReversible(): bool
+    {
+        // Exclude financial / payment / invoice modules and actions
+        if ($this->module === 'Invoices' || in_array($this->action, ['process_payments', 'create_invoice', 'file_warranty_claim'])) {
+            return false;
+        }
+
+        return in_array($this->action, ['stock_adjust', 'status_change']);
+    }
 }

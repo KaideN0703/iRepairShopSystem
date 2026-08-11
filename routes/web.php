@@ -65,6 +65,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/job_orders/{job_order}/receipt', [JobOrderController::class, 'printReceipt'])->name('job_orders.receipt');
     Route::post('/job_orders/{job_order}/photos', [JobOrderController::class, 'uploadPhoto'])->name('job_orders.upload_photo');
     Route::post('/job_orders/{job_order}/signature', [JobOrderController::class, 'saveSignature'])->name('job_orders.save_signature');
+    Route::post('/job_orders/{job_order}/resolve_declined/{approval_request}', [JobOrderController::class, 'resolveDeclinedApproval'])->name('job_orders.resolve_declined');
 
     // Live Repair Progress Updates (Staff Side)
     Route::post('/job_orders/{job_order}/progress_updates', [ProgressUpdateController::class, 'store'])->name('job_orders.progress_updates.store');
@@ -87,6 +88,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/suppliers/{supplier}/purchase_orders', [SupplierController::class, 'storePurchaseOrder'])->name('suppliers.store_po');
 
     // Technicians
+    Route::get('/technicians-availability', [TechnicianController::class, 'availability'])->name('technicians.availability');
     Route::resource('technicians', TechnicianController::class);
 
     // Invoices
@@ -111,6 +113,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Audit Trail Logs
     Route::get('/audit_logs', [AuditLogController::class, 'index'])->name('audit_logs.index');
+    Route::post('/audit_logs/{audit_log}/revert', [AuditLogController::class, 'revert'])->name('audit_logs.revert');
 
     // Backup & Restore
     Route::get('/backups', [BackupController::class, 'index'])->name('backups.index');

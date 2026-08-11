@@ -11,6 +11,11 @@
 
     Usage:
       <x-circuit-progress-tracker :stages="$stages" />
+
+    Task 7 improvements:
+    - Persistent labels always visible (not just on hover)
+    - "You are here" chevron arrow above active stage node
+    - Contrast-safe colors for amber/copper on dark background
 --}}
 @props(['stages' => []])
 
@@ -27,18 +32,29 @@
             @endphp
 
             {{-- Stage node --}}
-            <div class="circuit-stage" role="listitem" aria-label="{{ $label }}">
+            <div class="circuit-stage {{ $active ? 'circuit-stage--active' : '' }}" role="listitem"
+                 aria-label="{{ $label }}{{ $active ? ' — Current Stage' : ($done ? ' — Completed' : '') }}">
+
+                {{-- "You are here" chevron marker (Task 7) --}}
+                @if($active)
+                    <div class="circuit-you-are-here" aria-hidden="true" title="You are here">
+                        <svg width="10" height="7" viewBox="0 0 10 7" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M5 7L0.669873 0.25L9.33013 0.25L5 7Z" fill="#F5A623"/>
+                        </svg>
+                    </div>
+                @endif
+
                 {{-- Node circle --}}
                 <div class="circuit-node {{ $done ? 'done' : ($active ? 'active' : '') }}"
                      aria-current="{{ $active ? 'step' : 'false' }}">
                 </div>
 
-                {{-- Label --}}
+                {{-- Persistent Label (always visible — Task 7) --}}
                 <span class="circuit-stage-label {{ $done ? 'done' : ($active ? 'active' : '') }}">
                     {{ $label }}
                 </span>
 
-                {{-- Tooltip (hover) --}}
+                {{-- Tooltip (hover for additional detail) --}}
                 @if($tip || $photo)
                     <div class="circuit-stage-tooltip" role="tooltip">
                         @if($photo)
@@ -48,7 +64,7 @@
                         @if($tip)
                             <p style="margin:0; font-size:0.72rem; color:#EDE6D6; line-height:1.4;">{{ $tip }}</p>
                         @endif
-                        <div style="margin-top:0.35rem; font-family:'JetBrains Mono',monospace; font-size:0.6rem; color:#7A4A12;">
+                        <div style="margin-top:0.35rem; font-family:'JetBrains Mono',monospace; font-size:0.6rem; color:#B97A1A;">
                             {{ strtoupper($label) }}
                         </div>
                     </div>

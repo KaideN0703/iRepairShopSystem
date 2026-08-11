@@ -647,6 +647,21 @@ input[type="checkbox"].ir-checkbox {
 .circuit-stage-label.done   { color: #B97A1A; }
 .circuit-stage-label.active { color: #F5A623; }
 
+/* Task 7: "You are here" chevron above active stage */
+.circuit-stage--active {
+    position: relative;
+}
+
+.circuit-you-are-here {
+    position: absolute;
+    top: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .circuit-stage-tooltip {
     display: none;
     position: absolute;

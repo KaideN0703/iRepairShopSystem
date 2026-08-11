@@ -53,6 +53,7 @@
                         <th class="px-6 py-4">Action</th>
                         <th class="px-6 py-4">Description</th>
                         <th class="px-6 py-4 text-right">IP Address</th>
+                        <th class="px-6 py-4 text-center">Action</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-ir-copper">
@@ -78,10 +79,23 @@
                             <td class="px-6 py-4 text-right font-mono text-xs text-ir-copper">
                                 {{ $log->ip_address ?? '127.0.0.1' }}
                             </td>
+                            <td class="px-6 py-4 text-center">
+                                @if($log->isReversible())
+                                    <form action="{{ route('audit_logs.revert', $log) }}" method="POST"
+                                          onsubmit="return confirm('Are you sure you want to revert this change? A new audit log entry will be created.')">
+                                        @csrf
+                                        <button type="submit" class="px-3 py-1 rounded bg-ir-copper/20 hover:bg-ir-copper/40 text-ir-gold border border-ir-copper text-xs font-semibold transition-colors flex items-center gap-1 mx-auto" title="Revert this change">
+                                            <i class="fa-solid fa-rotate-left text-[10px]"></i> Revert
+                                        </button>
+                                    </form>
+                                @else
+                                    <span class="text-[10px] text-ir-copper/50 italic">—</span>
+                                @endif
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-8 text-center text-ir-copper">No activity logs recorded.</td>
+                            <td colspan="7" class="px-6 py-8 text-center text-ir-copper">No activity logs recorded.</td>
                         </tr>
                     @endforelse
                 </tbody>

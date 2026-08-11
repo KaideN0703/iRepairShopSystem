@@ -54,15 +54,10 @@
                                 {{ $inv->issue_date ? $inv->issue_date->format('M d, Y') : 'N/A' }}
                             </td>
                             <td class="px-6 py-4 text-center">
-                                <span class="px-3 py-1 rounded-full text-xs font-bold border uppercase
-                                    @if($inv->payment_status === 'paid') bg-emerald-500/10 text-emerald-400 border-emerald-500/30
-                                    @elseif($inv->payment_status === 'partial') bg-amber-500/10 text-amber-400 border-amber-500/30
-                                    @else bg-red-500/10 text-red-400 border-red-500/30 @endif">
-                                    {{ $inv->payment_status }}
-                                </span>
+                                <x-status-badge :stage="$inv->payment_status" />
                             </td>
                             <td class="px-6 py-4 text-right font-mono">
-                                <span class="font-bold text-ir-bone">₱{{ number_format($inv->paid_amount, 2) }}</span> / ₱{{ number_format($inv->total_amount, 2) }}
+                                <span class="font-bold text-ir-bone"><x-currency :amount="$inv->paid_amount" /></span> / <x-currency :amount="$inv->total_amount" />
                             </td>
                             <td class="px-6 py-4 text-center">
                                 <div class="flex items-center justify-center gap-2">

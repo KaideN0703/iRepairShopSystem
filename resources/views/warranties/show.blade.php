@@ -9,12 +9,7 @@
         <div>
             <div class="flex items-center gap-3">
                 <h2 class="text-2xl font-bold text-ir-bone">Warranty Record</h2>
-                <span class="px-3 py-1 rounded-full text-xs font-bold border uppercase
-                    @if($warranty->status === 'active') bg-emerald-500/10 text-emerald-400 border-emerald-500/30
-                    @elseif($warranty->status === 'claimed') bg-amber-500/10 text-amber-400 border-amber-500/30
-                    @else bg-ir-carbon text-ir-bone/70 border-ir-copper @endif">
-                    {{ $warranty->status }}
-                </span>
+                <x-status-badge :stage="$warranty->status" />
             </div>
             <p class="text-xs text-ir-bone/70 mt-1">
                 Customer: <strong>{{ $warranty->customer?->name }}</strong> | Device: {{ $warranty->device?->brand }} {{ $warranty->device?->model }} | Ticket: #{{ $warranty->jobOrder?->ticket_number }}

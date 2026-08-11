@@ -13,6 +13,8 @@ class WarrantyController extends Controller
 {
     public function index(Request $request)
     {
+        $this->authorize('warranty.view');
+
         $status = $request->query('status');
         $search = $request->query('search');
 
@@ -37,12 +39,15 @@ class WarrantyController extends Controller
 
     public function show(Warranty $warranty)
     {
+        $this->authorize('warranty.view');
         $warranty->load(['jobOrder.parts.part', 'customer', 'device', 'claims']);
         return view('warranties.show', compact('warranty'));
     }
 
     public function fileClaim(Request $request, Warranty $warranty)
     {
+        $this->authorize('warranty.claim');
+
         $request->validate([
             'issue_description' => 'required|string',
         ]);
@@ -77,6 +82,8 @@ class WarrantyController extends Controller
 
     public function updateClaimStatus(Request $request, WarrantyClaim $claim)
     {
+        $this->authorize('warranty.manage');
+
         $request->validate([
             'resolution_status' => 'required|in:pending,approved,rejected,resolved',
             'resolution_notes' => 'nullable|string',

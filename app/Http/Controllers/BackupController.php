@@ -13,12 +13,15 @@ class BackupController extends Controller
 {
     public function index()
     {
+        $this->authorize('backup.manage');
         $backups = Backup::latest()->get();
         return view('backup.index', compact('backups'));
     }
 
     public function createBackup(Request $request)
     {
+        $this->authorize('backup.manage');
+
         $dbPath = database_path('database.sqlite');
         if (!File::exists($dbPath)) {
             return back()->with('error', 'SQLite database file does not exist.');
@@ -54,6 +57,8 @@ class BackupController extends Controller
 
     public function download(Backup $backup)
     {
+        $this->authorize('backup.manage');
+
         $filePath = storage_path('app/' . $backup->file_path);
         if (File::exists($filePath)) {
             return response()->download($filePath);
@@ -63,6 +68,8 @@ class BackupController extends Controller
 
     public function restore(Request $request, Backup $backup)
     {
+        $this->authorize('backup.manage');
+
         $backupPath = storage_path('app/' . $backup->file_path);
         $dbPath = database_path('database.sqlite');
 
