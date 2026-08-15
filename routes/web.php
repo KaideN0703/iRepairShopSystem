@@ -78,7 +78,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/job_orders/{job_order}/diagnosis/ai_suggestions', [DiagnosisController::class, 'getAiSuggestions'])->name('diagnoses.ai_suggestions');
 
     // Inventory Parts
-    Route::resource('inventory', InventoryController::class);
+    Route::resource('inventory', InventoryController::class)->parameters(['inventory' => 'part']);
     Route::post('/inventory/{part}/stock', [InventoryController::class, 'adjustStock'])->name('inventory.adjust_stock');
     Route::get('/inventory/{part}/barcode', [InventoryController::class, 'printBarcode'])->name('inventory.barcode');
 

@@ -107,16 +107,32 @@
                             </td>
                             <td class="px-6 py-4 text-center">
                                 <div class="flex items-center justify-center gap-2">
-                                    <a href="{{ route('inventory.barcode', $p) }}" target="_blank" class="p-2 rounded-lg bg-ir-carbon hover:bg-ir-carbon text-ir-bone hover:text-ir-bone" title="Print Barcode Label">
+                                    <a href="{{ route('inventory.barcode', $p) }}" target="_blank"
+                                       class="p-2 rounded-lg bg-ir-void border border-ir-copper/50 text-ir-bone/70 hover:bg-ir-gold/10 hover:text-ir-gold hover:border-ir-gold/50 transition-colors"
+                                       title="Print Barcode Label">
                                         <i class="fa-solid fa-barcode"></i>
                                     </a>
-                                    <a href="{{ route('inventory.show', $p) }}" class="p-2 rounded-lg bg-ir-carbon hover:bg-ir-carbon text-ir-bone hover:text-ir-bone" title="View Details">
+                                    <a href="{{ route('inventory.show', $p) }}"
+                                       class="p-2 rounded-lg bg-ir-void border border-ir-copper/50 text-ir-bone/70 hover:bg-blue-500/10 hover:text-blue-400 hover:border-blue-500/40 transition-colors"
+                                       title="View Stock Details">
                                         <i class="fa-solid fa-boxes-packing"></i>
                                     </a>
                                     @can('parts.catalog.manage')
-                                    <a href="{{ route('inventory.edit', $p) }}" class="p-2 rounded-lg bg-ir-carbon hover:bg-ir-carbon text-ir-bone hover:text-ir-bone" title="Edit Part">
+                                    <a href="{{ route('inventory.edit', $p) }}"
+                                       class="p-2 rounded-lg bg-ir-void border border-ir-copper/50 text-ir-bone/70 hover:bg-amber-500/10 hover:text-amber-400 hover:border-amber-500/40 transition-colors"
+                                       title="Edit Part Details">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </a>
+                                    <form action="{{ route('inventory.destroy', $p) }}" method="POST"
+                                          onsubmit="return confirm('Delete part \'{{ addslashes($p->name) }}\'? This cannot be undone.')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit"
+                                                class="p-2 rounded-lg bg-ir-void border border-ir-copper/50 text-ir-bone/70 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/40 transition-colors"
+                                                title="Delete Part">
+                                            <i class="fa-solid fa-trash-can"></i>
+                                        </button>
+                                    </form>
                                     @endcan
                                 </div>
                             </td>

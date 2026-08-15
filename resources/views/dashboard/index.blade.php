@@ -11,7 +11,7 @@
     <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1rem;">
 
         {{-- Pending Intake --}}
-        <div class="ir-stat-card">
+        <a href="{{ route('job_orders.index', ['status' => 'Received']) }}" class="ir-stat-card" style="text-decoration:none; display:block; transition:border-color 150ms;" onmouseover="this.style.borderColor='#F5A623'" onmouseout="this.style.borderColor='#7A4A12'">
             <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:0.5rem;">
                 <div>
                     <div class="ir-stat-label">Pending Intake</div>
@@ -24,10 +24,10 @@
                     <i class="fa-solid fa-hourglass-start"></i>
                 </div>
             </div>
-        </div>
+        </a>
 
         {{-- Ongoing Repairs --}}
-        <div class="ir-stat-card">
+        <a href="{{ route('job_orders.index', ['status' => 'Under Repair']) }}" class="ir-stat-card" style="text-decoration:none; display:block; transition:border-color 150ms;" onmouseover="this.style.borderColor='#F5A623'" onmouseout="this.style.borderColor='#7A4A12'">
             <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:0.5rem;">
                 <div>
                     <div class="ir-stat-label">Ongoing Repairs</div>
@@ -40,10 +40,10 @@
                     <i class="fa-solid fa-screwdriver-wrench"></i>
                 </div>
             </div>
-        </div>
+        </a>
 
         {{-- Ready / Completed --}}
-        <div class="ir-stat-card">
+        <a href="{{ route('job_orders.index', ['status' => 'Ready for Pickup']) }}" class="ir-stat-card" style="text-decoration:none; display:block; transition:border-color 150ms;" onmouseover="this.style.borderColor='#35D07F'" onmouseout="this.style.borderColor='#7A4A12'">
             <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:0.5rem;">
                 <div>
                     <div class="ir-stat-label">Ready / Completed</div>
@@ -56,11 +56,11 @@
                     <i class="fa-solid fa-box-check"></i>
                 </div>
             </div>
-        </div>
+        </a>
 
         @if($totalRevenueMonth !== null)
         {{-- Monthly Revenue --}}
-        <div class="ir-stat-card">
+        <a href="{{ route('invoices.index', ['status' => 'paid']) }}" class="ir-stat-card" style="text-decoration:none; display:block; transition:border-color 150ms;" onmouseover="this.style.borderColor='#F5A623'" onmouseout="this.style.borderColor='#7A4A12'">
             <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:0.5rem;">
                 <div>
                     <div class="ir-stat-label">Monthly Revenue</div>
@@ -73,7 +73,7 @@
                     <i class="fa-solid fa-sack-dollar"></i>
                 </div>
             </div>
-        </div>
+        </a>
         @endif
 
     </div>
@@ -122,7 +122,15 @@
     {{-- ================================================================
          CHARTS + LOW STOCK — 2 COL GRID
          ================================================================ --}}
-    <div style="display:grid; grid-template-columns:1fr; gap:1rem;" class="lg:grid-cols-3">
+    <div style="display:grid; grid-template-columns: 1fr; gap:1rem;"
+         x-data="{}"
+         x-init="
+            function setGrid() {
+                $el.style.gridTemplateColumns = window.innerWidth >= 1024 ? '1fr 1fr 1fr' : '1fr';
+            }
+            setGrid();
+            window.addEventListener('resize', setGrid);
+         ">
 
         @if(!empty($incomeForecast['labels']))
         {{-- Income Chart --}}
@@ -179,7 +187,10 @@
             @else
                 <div style="display:flex; flex-direction:column; gap:0.5rem; max-height:220px; overflow-y:auto; padding-right:2px;">
                     @foreach($lowStockParts as $part)
-                        <div style="background:#0B0B0C; border:1px solid rgba(229,72,77,0.2); border-radius:4px; padding:0.6rem 0.75rem; display:flex; align-items:center; justify-content:space-between; gap:0.5rem;">
+                        <a href="{{ route('inventory.show', $part) }}"
+                           style="background:#0B0B0C; border:1px solid rgba(229,72,77,0.2); border-radius:4px; padding:0.6rem 0.75rem; display:flex; align-items:center; justify-content:space-between; gap:0.5rem; text-decoration:none; transition:border-color 150ms;"
+                           onmouseover="this.style.borderColor='rgba(229,72,77,0.6)'"
+                           onmouseout="this.style.borderColor='rgba(229,72,77,0.2)'">
                             <div style="min-width:0;">
                                 <span style="display:block; font-size:0.78rem; font-weight:600; color:#EDE6D6; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-family:'Inter',sans-serif;">{{ $part->name }}</span>
                                 <span style="display:block; font-size:0.65rem; color:#9a8f7e; font-family:'JetBrains Mono',monospace;">{{ $part->sku }} · {{ $part->location_rack ?? 'N/A' }}</span>
@@ -188,7 +199,7 @@
                                 <span class="badge badge-red">{{ $part->stock_quantity }} left</span>
                                 <span style="display:block; font-size:0.62rem; color:#9a8f7e; margin-top:2px; font-family:'JetBrains Mono',monospace;">Reorder: {{ $part->reorder_level }}</span>
                             </div>
-                        </div>
+                        </a>
                     @endforeach
                 </div>
             @endif
