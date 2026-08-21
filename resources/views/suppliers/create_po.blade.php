@@ -33,7 +33,9 @@
                     <label class="block text-xs text-ir-bone/70 mb-1">Select Part</label>
                     <select name="items[0][part_id]" required class="w-full px-3 py-2 rounded-lg bg-ir-carbon border border-ir-copper text-xs text-ir-bone">
                         @foreach($parts as $p)
-                            <option value="{{ $p->id }}">{{ $p->name }} (Stock: {{ $p->stock_quantity }})</option>
+                            <option value="{{ $p->id }}">
+                                {{ $p->name }} · {{ $p->stock_quantity <= 0 ? '[OUT OF STOCK (0)]' : ($p->isLowStock() ? '[LOW STOCK: ' . $p->stock_quantity . ' left]' : 'Stock: ' . $p->stock_quantity . ' units') }}
+                            </option>
                         @endforeach
                     </select>
                 </div>

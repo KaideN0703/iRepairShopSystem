@@ -246,7 +246,7 @@
                 <option value="">-- Choose Replacement Part --</option>
                 @foreach($availableParts as $part)
                     <option value="{{ $part->id }}">
-                        {{ $part->name }} (SKU: {{ $part->sku }}) · Stock: {{ $part->stock_quantity }} · <x-currency :amount="$part->selling_price" />
+                        {{ $part->name }} (SKU: {{ $part->sku }}) · {{ $part->stock_quantity <= 0 ? '[OUT OF STOCK]' : ($part->isLowStock() ? '[LOW STOCK: ' . $part->stock_quantity . ' left]' : 'Stock: ' . $part->stock_quantity . ' units') }} · ₱{{ number_format($part->selling_price, 2) }}
                     </option>
                 @endforeach
             </select>

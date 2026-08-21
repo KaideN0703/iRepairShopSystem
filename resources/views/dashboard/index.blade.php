@@ -120,21 +120,17 @@
     </div>
 
     {{-- ================================================================
-         CHARTS + LOW STOCK — 2 COL GRID
+         CHARTS + LOW STOCK — DYNAMIC GRID
          ================================================================ --}}
-    <div style="display:grid; grid-template-columns: 1fr; gap:1rem;"
-         x-data="{}"
-         x-init="
-            function setGrid() {
-                $el.style.gridTemplateColumns = window.innerWidth >= 1024 ? '1fr 1fr 1fr' : '1fr';
-            }
-            setGrid();
-            window.addEventListener('resize', setGrid);
-         ">
+    @php
+        $hasIncomeForecast = !empty($incomeForecast['labels']);
+    @endphp
 
-        @if(!empty($incomeForecast['labels']))
+    <div class="grid grid-cols-1 {{ $hasIncomeForecast ? 'lg:grid-cols-3' : '' }} gap-4">
+
+        @if($hasIncomeForecast)
         {{-- Income Chart --}}
-        <div class="ir-card" style="grid-column: span 2;">
+        <div class="ir-card lg:col-span-2">
             <div class="ir-card-header">
                 <div>
                     <h4 class="ir-card-title">
@@ -166,7 +162,7 @@
         @endif
 
         {{-- Low Stock Alerts --}}
-        <div class="ir-card">
+        <div class="ir-card {{ !$hasIncomeForecast ? 'w-full' : '' }}">
             <div class="ir-card-header">
                 <h4 class="ir-card-title">
                     <i class="fa-solid fa-triangle-exclamation" style="color:#F5A623; margin-right:0.4rem;"></i>
@@ -196,8 +192,7 @@
                                 <span style="display:block; font-size:0.65rem; color:#9a8f7e; font-family:'JetBrains Mono',monospace;">{{ $part->sku }} · {{ $part->location_rack ?? 'N/A' }}</span>
                             </div>
                             <div style="text-align:right; flex-shrink:0;">
-                                <span class="badge badge-red">{{ $part->stock_quantity }} left</span>
-                                <span style="display:block; font-size:0.62rem; color:#9a8f7e; margin-top:2px; font-family:'JetBrains Mono',monospace;">Reorder: {{ $part->reorder_level }}</span>
+                                <x-stock-badge :part="$part" :show-reorder="true" />
                             </div>
                         </a>
                     @endforeach

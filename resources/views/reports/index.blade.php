@@ -6,9 +6,9 @@
 <div class="space-y-6">
 
     <!-- Date Filter Bar -->
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-ir-carbon border border-ir-copper p-5 rounded-md">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-ir-carbon border border-ir-copper p-5 rounded-md mt-1">
         <div>
-            <h2 class="text-xl font-bold text-ir-bone">Business Reports & Predictive Analytics</h2>
+            <h2 class="text-xl font-bold text-ir-bone leading-normal">Business Reports & Predictive Analytics</h2>
             <p class="text-xs text-ir-bone/70 mt-1">Financial performance, technician turnaround, top parts, and trend forecasting</p>
         </div>
 
@@ -22,8 +22,23 @@
         </form>
     </div>
 
+    @php
+        $visibleCardsCount = 0;
+        if ($totalRevenue !== null) $visibleCardsCount++;
+        if ($totalPartsProfit !== null) $visibleCardsCount++;
+        if ($totalCompletedJobs !== null) $visibleCardsCount++;
+        if ($outstandingBalance !== null) $visibleCardsCount++;
+
+        $gridColsClass = match($visibleCardsCount) {
+            1 => 'grid-cols-1',
+            2 => 'grid-cols-1 sm:grid-cols-2',
+            3 => 'grid-cols-1 sm:grid-cols-3',
+            default => 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4',
+        };
+    @endphp
+
     <!-- Overview Financial & Repair Stats -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+    <div class="grid {{ $gridColsClass }} gap-5">
         @if($totalRevenue !== null)
         <div class="bg-ir-carbon border border-ir-copper rounded-md p-5">
             <span class="text-xs font-semibold text-ir-bone/70 uppercase tracking-wider">Total Service Revenue</span>
@@ -40,11 +55,13 @@
         </div>
         @endif
 
+        @if($totalCompletedJobs !== null)
         <div class="bg-ir-carbon border border-ir-copper rounded-md p-5">
             <span class="text-xs font-semibold text-ir-bone/70 uppercase tracking-wider">Total Completed Jobs</span>
             <h3 class="text-2xl font-extrabold text-ir-bone mt-1">{{ $totalCompletedJobs }} Tickets</h3>
             <span class="text-xs text-ir-bone/70 mt-1 inline-block font-mono">Successfully repaired</span>
         </div>
+        @endif
 
         @if($outstandingBalance !== null)
         <div class="bg-ir-carbon border border-ir-copper rounded-md p-5">
@@ -55,11 +72,16 @@
         @endif
     </div>
 
-    @if(!empty($incomeForecast['labels']) || !empty($inventoryForecast))
-    <!-- Forecasting & Analytics Section -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    @php
+        $hasIncomeForecast = !empty($incomeForecast['labels']);
+        $hasInventoryForecast = !empty($inventoryForecast);
+    @endphp
 
-        @if(!empty($incomeForecast['labels']))
+    @if($hasIncomeForecast || $hasInventoryForecast)
+    <!-- Forecasting & Analytics Section -->
+    <div class="grid grid-cols-1 {{ ($hasIncomeForecast && $hasInventoryForecast) ? 'lg:grid-cols-2' : '' }} gap-6">
+
+        @if($hasIncomeForecast)
         <!-- Monthly Income Trend Forecast Chart -->
         <div class="bg-ir-carbon border border-ir-copper rounded-md p-6 space-y-4">
             <h4 class="text-sm font-bold text-ir-bone uppercase tracking-wider flex items-center justify-between border-b border-ir-copper pb-3">
@@ -73,7 +95,7 @@
         </div>
         @endif
 
-        @if(!empty($inventoryForecast))
+        @if($hasInventoryForecast)
         <!-- Inventory Demand Forecasting (Moving Average) -->
         <div class="bg-ir-carbon border border-ir-copper rounded-md p-6 space-y-4">
             <h4 class="text-sm font-bold text-ir-bone uppercase tracking-wider border-b border-ir-copper pb-3 flex items-center justify-between">
@@ -99,8 +121,8 @@
                                     {{ $f['name'] }}
                                     <span class="block text-[10px] text-ir-copper">SKU: {{ $f['sku'] }}</span>
                                 </td>
-                                <td class="px-3 py-2 text-center font-bold {{ $f['needs_reorder'] ? 'text-red-400' : 'text-ir-bone' }}">
-                                    {{ $f['current_stock'] }}
+                                <td class="px-3 py-2 text-center">
+                                    <x-stock-badge :quantity="$f['current_stock']" :reorder-level="5" />
                                 </td>
                                 <td class="px-3 py-2 text-center">{{ $f['units_used_30_days'] }}</td>
                                 <td class="px-3 py-2 text-center font-bold text-ir-gold">{{ $f['projected_30day_demand'] }} units</td>
@@ -124,9 +146,16 @@
     </div>
     @endif
 
-    <!-- Technician Performance & Best Selling Parts Tables -->
-    <div class="grid grid-cols-1 {{ $bestSellingParts->isNotEmpty() ? 'lg:grid-cols-2' : '' }} gap-6">
+    @php
+        $hasTechPerformance = isset($techPerformance) && $techPerformance->isNotEmpty();
+        $hasBestSellingParts = isset($bestSellingParts) && $bestSellingParts->isNotEmpty();
+    @endphp
 
+    @if($hasTechPerformance || $hasBestSellingParts)
+    <!-- Technician Performance & Best Selling Parts Tables -->
+    <div class="grid grid-cols-1 {{ ($hasTechPerformance && $hasBestSellingParts) ? 'lg:grid-cols-2' : '' }} gap-6">
+
+        @if($hasTechPerformance)
         <!-- Technician Performance Report -->
         <div class="bg-ir-carbon border border-ir-copper rounded-md p-6 space-y-4">
             <h4 class="text-sm font-bold text-ir-bone uppercase tracking-wider border-b border-ir-copper pb-3">
@@ -156,8 +185,9 @@
                 </table>
             </div>
         </div>
+        @endif
 
-        @if($bestSellingParts->isNotEmpty())
+        @if($hasBestSellingParts)
         <!-- Best-Selling Parts Report -->
         <div class="bg-ir-carbon border border-ir-copper rounded-md p-6 space-y-4">
             <h4 class="text-sm font-bold text-ir-bone uppercase tracking-wider border-b border-ir-copper pb-3">
@@ -192,6 +222,7 @@
         @endif
 
     </div>
+    @endif
 
 </div>
 

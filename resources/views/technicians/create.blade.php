@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'Register Technician')
+@section('title', 'Add Technician & Staff')
 
 @section('content')
 <div class="max-w-2xl mx-auto space-y-6">
     <div class="flex items-center justify-between">
-        <h2 class="text-2xl font-bold text-ir-bone">Register New Technician</h2>
+        <h2 class="text-2xl font-bold text-ir-bone">Add Technician &amp; Staff</h2>
         <a href="{{ route('technicians.index') }}" class="px-4 py-2 rounded-md bg-ir-carbon text-ir-bone text-sm">Cancel</a>
     </div>
 

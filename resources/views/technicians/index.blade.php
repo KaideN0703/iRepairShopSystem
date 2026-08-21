@@ -12,7 +12,7 @@
         </div>
 
         <a href="{{ route('technicians.create') }}" class="px-5 py-2.5 rounded-md bg-ir-gold hover:bg-ir-amber-deep text-ir-bone font-semibold text-sm flex items-center gap-2 transition-colors">
-            <i class="fa-solid fa-plus"></i> Add New Technician
+            <i class="fa-solid fa-plus"></i> Add Technician &amp; Staff
         </a>
     </div>
 

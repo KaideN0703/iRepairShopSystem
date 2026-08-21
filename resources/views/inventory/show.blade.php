@@ -37,7 +37,7 @@
         <div class="bg-ir-carbon border border-ir-copper rounded-md p-6 space-y-4">
             <h4 class="text-xs font-bold text-ir-bone/70 uppercase tracking-wider border-b border-ir-copper pb-3 flex items-center justify-between">
                 <span><i class="fa-solid fa-boxes-packing text-ir-gold mr-1"></i> Stock Status</span>
-                <span class="text-sm font-bold text-ir-bone">{{ $part->stock_quantity }} units</span>
+                <x-stock-badge :part="$part" :show-reorder="true" />
             </h4>
 
             @can('parts.catalog.manage')

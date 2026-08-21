@@ -6,7 +6,7 @@
 <div class="space-y-6">
 
     <!-- Top Valuation Metrics -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mt-1">
         <div class="bg-ir-carbon border border-ir-copper rounded-md p-5">
             <span class="text-xs font-semibold text-ir-bone/70 uppercase tracking-wider">Inventory Cost Valuation</span>
             <h3 class="text-2xl font-extrabold text-ir-bone mt-1">₱{{ number_format($totalValuationCost, 2) }}</h3>
@@ -19,17 +19,25 @@
             <span class="text-xs text-emerald-400/80 mt-1 inline-block">Potential revenue value</span>
         </div>
 
-        <div class="bg-ir-carbon border border-ir-copper rounded-md p-5">
-            <span class="text-xs font-semibold text-ir-bone/70 uppercase tracking-wider">Low Stock Threshold Items</span>
-            <h3 class="text-2xl font-extrabold text-amber-400 mt-1">{{ $lowStockCount }} Parts</h3>
-            <span class="text-xs text-amber-400/80 mt-1 inline-block">At or below reorder level</span>
-        </div>
+        <a href="{{ route('inventory.index', request()->boolean('low_stock') ? request()->except('low_stock') : array_merge(request()->except('page'), ['low_stock' => 1])) }}" class="bg-ir-carbon border border-ir-copper hover:border-amber-500/50 rounded-md p-5 transition-colors group block">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-ir-bone/70 uppercase tracking-wider">Low Stock Threshold Items</span>
+                @if(request()->boolean('low_stock'))
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">Active Filter</span>
+                @endif
+            </div>
+            <h3 class="text-2xl font-extrabold text-amber-400 mt-1 flex items-center gap-2">
+                {{ $lowStockCount }} Parts
+                <i class="fa-solid fa-filter text-xs opacity-50 group-hover:opacity-100 transition-opacity"></i>
+            </h3>
+            <span class="text-xs text-amber-400/80 mt-1 inline-block">At or below reorder level (Click to {{ request()->boolean('low_stock') ? 'clear filter' : 'filter' }})</span>
+        </a>
     </div>
 
     <!-- Filters & Actions -->
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-ir-carbon border border-ir-copper p-5 rounded-md">
-        <form action="{{ route('inventory.index') }}" method="GET" class="w-full sm:w-auto flex-1 grid grid-cols-1 sm:grid-cols-4 gap-3">
-            <input type="text" name="search" value="{{ $search }}" placeholder="Search part name, SKU, barcode, models..." class="px-4 py-2 rounded-md bg-ir-void border border-ir-copper text-sm text-ir-bone focus:outline-none">
+        <form action="{{ route('inventory.index') }}" method="GET" class="w-full sm:w-auto flex-1 grid grid-cols-1 sm:grid-cols-5 gap-3">
+            <input type="text" name="search" value="{{ $search }}" placeholder="Search part name, SKU, barcode..." class="px-4 py-2 rounded-md bg-ir-void border border-ir-copper text-sm text-ir-bone focus:outline-none">
             
             <select name="category_id" class="px-4 py-2 rounded-md bg-ir-void border border-ir-copper text-sm text-ir-bone focus:outline-none">
                 <option value="">All Categories</option>
@@ -43,6 +51,11 @@
                 @foreach($suppliers as $sup)
                     <option value="{{ $sup->id }}" {{ $supplierId == $sup->id ? 'selected' : '' }}>{{ $sup->name }}</option>
                 @endforeach
+            </select>
+
+            <select name="low_stock" class="px-4 py-2 rounded-md bg-ir-void border border-ir-copper text-sm text-ir-bone focus:outline-none">
+                <option value="">All Stock Levels</option>
+                <option value="1" {{ request()->boolean('low_stock') ? 'selected' : '' }}>Low Stock Only ({{ $lowStockCount }})</option>
             </select>
 
             <button type="submit" class="py-2 px-4 rounded-md bg-ir-gold hover:bg-ir-amber-deep text-ir-bone font-medium text-sm transition-colors">
@@ -100,10 +113,7 @@
                                 ₱{{ number_format($p->selling_price, 2) }}
                             </td>
                             <td class="px-6 py-4 text-center">
-                                <span class="px-3 py-1 rounded-full text-xs font-bold border 
-                                    {{ $isLow ? 'bg-red-500/10 text-red-400 border-red-500/30' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' }}">
-                                    {{ $p->stock_quantity }} {{ $isLow ? '(Low Stock!)' : 'units' }}
-                                </span>
+                                <x-stock-badge :part="$p" :show-reorder="true" />
                             </td>
                             <td class="px-6 py-4 text-center">
                                 <div class="flex items-center justify-center gap-2">

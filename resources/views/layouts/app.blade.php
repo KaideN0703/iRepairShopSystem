@@ -137,7 +137,7 @@
                     @can('technicians.manage')
                     <a href="{{ route('technicians.index') }}" class="nav-item {{ request()->routeIs('technicians.*') ? 'active' : '' }}">
                         <i class="fa-solid fa-user-gear"></i>
-                        <span>Technicians</span>
+                        <span>Technicians &amp; Staff</span>
                     </a>
                     @endcan
 
